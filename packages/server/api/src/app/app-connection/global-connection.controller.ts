@@ -22,6 +22,7 @@ export const globalConnectionController: FastifyPluginAsyncZod = async (app) => 
             externalId: request.body.externalId ?? apId(),
             displayName: request.body.displayName,
             pieceName: request.body.pieceName,
+            pieceVersion: request.body.pieceVersion,
             type: request.body.type,
             value: request.body.value,
             metadata: request.body.metadata,

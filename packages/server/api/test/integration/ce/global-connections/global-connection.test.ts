@@ -28,6 +28,19 @@ async function seedPieceMetadata(ctx: TestContext): Promise<string> {
     return piece.name
 }
 
+async function seedOlderVersionOf({ ctx, pieceName, version }: { ctx: TestContext, pieceName: string, version: string }): Promise<void> {
+    const older = createMockPieceMetadata({
+        name: pieceName,
+        version,
+        platformId: ctx.platform.id,
+        packageType: PackageType.REGISTRY,
+        pieceType: PieceType.CUSTOM,
+        minimumSupportedRelease: '0.0.0',
+        maximumSupportedRelease: '999.999.999',
+    })
+    await db.save('piece_metadata', older)
+}
+
 function secretTextConnection({ displayName, pieceName, projectIds }: { displayName: string, pieceName: string, projectIds: string[] }) {
     return {
         displayName,
@@ -110,6 +123,20 @@ describe('Global Connection API', () => {
 
         expect(rows.every((row) => row.platformId === second.platform.id)).toBe(true)
         expect(rows.some((row) => row.displayName === 'first platform only')).toBe(false)
+    })
+
+    it('pins the piece version the caller asked for', async () => {
+        const ctx = await createTestContext(app)
+        const pieceName = await seedPieceMetadata(ctx)
+        await seedOlderVersionOf({ ctx, pieceName, version: '0.0.1' })
+
+        const response = await ctx.post('/v1/global-connections', {
+            ...secretTextConnection({ displayName: 'pinned', pieceName, projectIds: [ctx.project.id] }),
+            pieceVersion: '0.0.1',
+        })
+
+        expect(response?.statusCode).toBe(StatusCodes.CREATED)
+        expect(response?.json().pieceVersion).toBe('0.0.1')
     })
 
     it('rejects a piece that does not exist', async () => {

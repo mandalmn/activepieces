@@ -153,7 +153,7 @@ export const projectCollectionUtils = {
     });
   },
   delete: (projectIds: string[]) => {
-    projectCollection.delete(projectIds);
+    return projectCollection.delete(projectIds).isPersisted.promise;
   },
   refetchProjects: () => {
     authoritativeProjectsGeneration += 1;
