@@ -7,7 +7,6 @@ import { z } from 'zod'
 import { securityAccess } from '../../core/security/authorization/fastify-security'
 import { flowService } from '../../flows/flow/flow.service'
 import { extractMcpTriggerInput, mcpPropertyToZod } from '../../mcp/mcp-server-builder'
-import { assertCreditsAndAppSumoNotExceeded } from '../../platform/billing-provider'
 import { projectService } from '../../project/project-service'
 import { jobQueue, JobType } from '../../workers/job-queue/job-queue'
 import { agentHelpers } from './agent-helpers'
@@ -49,7 +48,6 @@ export const agentRunController: FastifyPluginAsyncZod = async (app) => {
         }
         const flowTools = await resolveFlowTools({ projectId, flowToolRequests, log: request.log })
         await agentHelpers.assertRunProviderConfigured({ platformId: platform.id, provider, providerConfigId, scope: agentHelpers.runScopeOrThrow({ projectId }), log: request.log })
-        await assertCreditsAndAppSumoNotExceeded({ platformId: platform.id, log: request.log })
         const { ownerId } = await projectService(request.log).getOneOrThrow(projectId)
 
         const conversationId = apId()

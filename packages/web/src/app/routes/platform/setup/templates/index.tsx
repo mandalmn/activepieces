@@ -28,14 +28,11 @@ import {
 } from '@/components/ui/tooltip';
 import { PieceIconList } from '@/features/pieces';
 import { templatesApi, templatesMutations } from '@/features/templates';
-import { platformHooks } from '@/hooks/platform-hooks';
 
 import { CreateTemplateDialog } from './create-template-dialog';
 import { UpdateTemplateDialog } from './update-template-dialog';
 
 const PlatformTemplatesPage = () => {
-  const { platform } = platformHooks.useCurrentPlatform();
-
   const [searchParams] = useSearchParams();
   const { data, isLoading, refetch } = useQuery({
     queryKey: ['templates', searchParams.toString()],
@@ -205,16 +202,14 @@ const PlatformTemplatesPage = () => {
     [refetch],
   );
 
-  const isEnabled = platform.plan.manageTemplatesEnabled;
+  const isEnabled = true;
   return (
     <LockedFeatureGuard
-      featureKey="TEMPLATES"
       locked={!isEnabled}
       lockTitle={t('Unlock Templates')}
       lockDescription={t(
         'Convert the most common automations into reusable templates 1 click away from your users',
       )}
-      lockVideoUrl="https://cdn.activepieces.com/videos/showcase/templates.mp4"
     >
       <div className="flex flex-col w-full">
         <DashboardPageHeader

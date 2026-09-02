@@ -579,7 +579,6 @@ describe('Platform API', () => {
                 'allowedAuthDomains',
                 'allowedEmbedOrigins',
                 'autoCreatePersonalProjects',
-                'billingEnforced',
                 'cloudAuthEnabled',
                 'created',
                 'emailAuthEnabled',
@@ -600,12 +599,10 @@ describe('Platform API', () => {
                 'ssoDomainVerification',
                 'themeColors',
                 'updated',
-                'usage',
             ])
             expect(responseBody.id).toBe(mockPlatform.id)
             expect(responseBody.ownerId).toBe(mockOwner.id)
             expect(responseBody.name).toBe(mockPlatform.name)
-            expect(responseBody.billingEnforced).toBe(false)
             expect(responseBody.federatedAuthProviders.saml).toStrictEqual({})
             expect(responseBody.primaryColor).toBe(mockPlatform.primaryColor)
             expect(responseBody.themeColors).toBeNull()

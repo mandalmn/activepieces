@@ -45,7 +45,7 @@ export const eventDestinationsCollection = createCollection<
           url: modified.url,
           events: modified.events,
         };
-        await api.patch<EventDestination>(
+        await api.post<EventDestination>(
           `/v1/event-destinations/${original.id}`,
           request,
         );

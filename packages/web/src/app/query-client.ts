@@ -1,10 +1,9 @@
-import { ErrorCode, isNil } from '@activepieces/core-utils';
+import { isNil } from '@activepieces/core-utils';
 import { MutationCache, QueryCache, QueryClient } from '@tanstack/react-query';
 import { t } from 'i18next';
 
 import { useApErrorDialogStore } from '@/components/custom/ap-error-dialog/ap-error-dialog-store';
 import { internalErrorToast } from '@/components/ui/sonner';
-import { useManagePlanDialogStore } from '@/features/billing';
 import { api } from '@/lib/api';
 
 export const queryClient = new QueryClient({
@@ -30,12 +29,7 @@ export const queryClient = new QueryClient({
       if (!isNil(mutation.options.onError)) {
         return;
       }
-      if (api.isApError(err, ErrorCode.QUOTA_EXCEEDED)) {
-        const { openDialog } = useManagePlanDialogStore.getState();
-        openDialog();
-      } else {
-        internalErrorToast();
-      }
+      internalErrorToast();
     },
   }),
 });

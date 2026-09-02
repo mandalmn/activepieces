@@ -306,13 +306,7 @@ export default function ProjectsPage() {
   );
 
   const toolbarButtons = useMemo(
-    () => [
-      <CreateProjectButton
-        key="new-project"
-        variant="full"
-        projects={allProjects}
-      />,
-    ],
+    () => [<CreateProjectButton key="new-project" variant="full" />],
     [allProjects],
   );
 
@@ -362,13 +356,11 @@ export default function ProjectsPage() {
 
   return (
     <LockedFeatureGuard
-      featureKey="PROJECTS"
       locked={!isEnabled}
       lockTitle={t('Unlock Projects')}
       lockDescription={t(
         'Orchestrate your automation teams across projects with their own flows, connections and usage quotas',
       )}
-      lockVideoUrl="https://cdn.activepieces.com/videos/showcase/projects.mp4"
     >
       <div className="flex flex-col w-full">
         <DashboardPageHeader

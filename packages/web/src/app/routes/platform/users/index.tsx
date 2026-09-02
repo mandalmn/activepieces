@@ -13,12 +13,12 @@ import { DataTable } from '@/components/custom/data-table';
 import { UserRoundPlusIcon } from '@/components/icons/user-round-plus';
 import { Button } from '@/components/ui/button';
 import { internalErrorToast } from '@/components/ui/sonner';
-import { useSeatLimitGuard } from '@/features/billing';
 import { InviteUserDialog } from '@/features/members';
 import {
   platformUserHooks,
   platformUserMutations,
 } from '@/features/platform-admin/hooks/platform-user-hooks';
+import { platformHooks } from '@/hooks/platform-hooks';
 
 import { UserActions } from './actions/user-actions';
 import { createUsersTableColumns } from './columns';
@@ -37,7 +37,6 @@ export type UserRowData =
 
 export default function UsersPage() {
   const [inviteOpen, setInviteOpen] = useState(false);
-  const { handleSeatLimitError, seatLimitDialog } = useSeatLimitGuard();
 
   const {
     data: usersData,
@@ -76,6 +75,14 @@ export default function UsersPage() {
 
   const isLoading = usersLoading || invitationsLoading;
 
+  const { platform } = platformHooks.useCurrentPlatform();
+
+  const { mutate: transferOwnership, isPending: isTransferringOwnership } =
+    platformUserMutations.useTransferOwnership({
+      platformId: platform.id,
+      onSuccess: refetch,
+    });
+
   const { mutate: deleteUser } = platformUserMutations.useDeleteUser({
     onSuccess: refetch,
   });
@@ -86,10 +93,8 @@ export default function UsersPage() {
   const { mutate: updateUserStatus, isPending: isUpdatingStatus } =
     platformUserMutations.useUpdateUserStatus({
       onSuccess: refetch,
-      onError: (error) => {
-        if (!handleSeatLimitError(error)) {
-          internalErrorToast();
-        }
+      onError: () => {
+        internalErrorToast();
       },
     });
 
@@ -115,7 +120,6 @@ export default function UsersPage() {
 
   return (
     <LockedFeatureGuard
-      featureKey="USERS"
       locked={false}
       lockTitle={t('Unlock Users')}
       lockDescription={t('Manage your users and their access to your projects')}
@@ -158,6 +162,11 @@ export default function UsersPage() {
                 onDelete={handleDelete}
                 onToggleStatus={handleToggleStatus}
                 onUpdate={refetch}
+                onMakeOwner={transferOwnership}
+                isCurrentOwner={
+                  row.type !== 'invitation' && row.data.id === platform.ownerId
+                }
+                isTransferringOwnership={isTransferringOwnership}
               />
             ),
           ]}
@@ -168,7 +177,6 @@ export default function UsersPage() {
         setOpen={setInviteOpen}
         onInviteSuccess={refetch}
       />
-      {seatLimitDialog}
     </LockedFeatureGuard>
   );
 }

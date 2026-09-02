@@ -12,7 +12,6 @@ import { LogInIcon } from '@/components/icons/log-in';
 import { MousePointerClickIcon } from '@/components/icons/mouse-pointer-click';
 import { PaletteIcon } from '@/components/icons/palette';
 import { PuzzleIcon } from '@/components/icons/puzzle';
-import { ReceiptIcon } from '@/components/icons/receipt';
 import { ServerIcon } from '@/components/icons/server';
 import { Settings2Icon } from '@/components/icons/settings2';
 import { ShieldIcon } from '@/components/icons/shield';
@@ -97,13 +96,6 @@ export const STATIC_PAGES: StaticPage[] = [
     label: 'Platform Admin — Templates',
     href: '/platform/setup/templates',
     icon: LayoutGridIcon,
-    requiresPlatformAdmin: true,
-  },
-  {
-    id: 'page-platform-billing',
-    label: 'Platform Admin — Billing',
-    href: '/platform/setup/billing',
-    icon: ReceiptIcon,
     requiresPlatformAdmin: true,
   },
   {

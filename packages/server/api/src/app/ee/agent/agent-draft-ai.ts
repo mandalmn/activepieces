@@ -1,16 +1,13 @@
 import { readFileSync } from 'node:fs'
 import path from 'node:path'
-import { ActivepiecesError, AIProviderName, apId, ErrorCode, isNil, PlatformId, ProjectId, tryCatch, tryCatchSync } from '@activepieces/core-utils'
+import { ActivepiecesError, ErrorCode, isNil, PlatformId, ProjectId, tryCatch, tryCatchSync } from '@activepieces/core-utils'
 import { agentAiUtils } from '@activepieces/server-utils'
-import { AgentDraftFields, AgentTool, AgentToolType, CHAT_BYOK_CREDIT_WEIGHT, DEFAULT_CHAT_TIER_ID, DraftAgentResponse, isAppSumoCreditedPlan, MAX_SUGGESTED_AGENT_TOOLS, mcpToolNameUtils } from '@activepieces/shared'
+import { AgentDraftFields, AgentTool, AgentToolType, DEFAULT_CHAT_TIER_ID, DraftAgentResponse, MAX_SUGGESTED_AGENT_TOOLS, mcpToolNameUtils } from '@activepieces/shared'
 import { APICallError, generateText, LanguageModel } from 'ai'
 import { FastifyBaseLogger } from 'fastify'
 import { z } from 'zod'
 import { appConnectionService } from '../../app-connection/app-connection-service/app-connection-service'
 import { pieceMetadataService } from '../../pieces/metadata/piece-metadata-service'
-import { trackBillingAndSendTelemetry } from '../../platform/billing-and-telemetry'
-import { CreditUsageSource } from '../../platform/billing-provider'
-import { platformPlanService } from '../platform/platform-plan/platform-plan.service'
 import { agentHelpers } from './agent-helpers'
 
 const DRAFT_TIMEOUT_MS = 30_000
@@ -70,7 +67,6 @@ export const agentDraftAi = (log: FastifyBaseLogger) => ({
                 params: { message: 'Could not draft an agent from that description, try rewording it' },
             })
         }
-        await debitDraft({ platformId, projectId, log })
         return {
             ...parsed,
             tools: resolveToolPicks({ picks: parsed.tools, candidates }),
@@ -186,29 +182,6 @@ function parseDraft(raw: string): DraftReply | null {
     return parsed.success ? parsed.data : null
 }
 
-async function debitDraft({ platformId, projectId, log }: { platformId: PlatformId, projectId: ProjectId, log: FastifyBaseLogger }): Promise<void> {
-    const { error } = await tryCatch(async () => {
-        const provider = await agentHelpers.resolveChatProviderName({ platformId, projectId, log })
-        const value = provider === AIProviderName.ACTIVEPIECES ? agentHelpers.resolveTier({ tierId: FAST_TIER_ID }).creditWeight : CHAT_BYOK_CREDIT_WEIGHT
-        const platformPlan = await platformPlanService(log).getOrCreateForPlatform(platformId)
-        const usage = {
-            platformId,
-            value,
-            source: CreditUsageSource.AGENT_DRAFT as const,
-            idempotencyKey: `agent-draft:${apId()}`,
-            properties: { platformId, projectId, provider },
-        }
-        await trackBillingAndSendTelemetry({
-            log,
-            licenseKey: platformPlan.licenseKey,
-            credits: usage,
-            ...(isAppSumoCreditedPlan(platformPlan.plan) ? { appSumo: { ...usage, idempotencyKey: `agent-draft-appsumo:${apId()}` } } : {}),
-        })
-    })
-    if (!isNil(error)) {
-        log.warn({ error, platform: { id: platformId } }, '[agentDraftAi] Draft usage was not recorded')
-    }
-}
 
 const DraftReply = AgentDraftFields.extend({
     tools: z.array(z.object({ pieceName: z.string(), actionName: z.string() })).default([]),

@@ -1,4 +1,4 @@
-import { ActivepiecesError, apId, ErrorCode, isNil, sanitizeObjectForPostgresql, spreadIfDefined, tryCatch } from '@activepieces/core-utils'
+import { apId, isNil, sanitizeObjectForPostgresql, spreadIfDefined, tryCatch } from '@activepieces/core-utils'
 import {
     ApEdition,
     ChatPersonalization,
@@ -32,7 +32,6 @@ import { websocketService } from '../../../core/websockets.service'
 import { redisConnections } from '../../../database/redis-connections'
 import { system } from '../../../helper/system/system'
 import { AppSystemProp } from '../../../helper/system/system-props'
-import { assertCreditsAndAppSumoNotExceeded } from '../../../platform/billing-provider'
 import { platformService } from '../../../platform/platform.service'
 import { userService } from '../../../user/user-service'
 import { jobQueue, JobType } from '../../../workers/job-queue/job-queue'
@@ -715,17 +714,6 @@ async function guardsAllowResearch({ platformId, log }: { platformId: string, lo
     if (isNil(chatProvider.data)) {
         log.warn({ platform: { id: platformId } }, '[chatPersonalization] No chat AI provider configured, skipping research')
         return false
-    }
-    const credits = await tryCatch(() => assertCreditsAndAppSumoNotExceeded({ platformId, log }))
-    if (credits.error) {
-        const exhausted = credits.error instanceof ActivepiecesError && credits.error.error.code === ErrorCode.QUOTA_EXCEEDED
-        if (!exhausted) {
-            log.warn({ platform: { id: platformId }, error: credits.error }, '[chatPersonalization] Credits check failed, allowing research')
-        }
-        else {
-            log.warn({ platform: { id: platformId } }, '[chatPersonalization] Credits exhausted, skipping research')
-            return false
-        }
     }
     const { allowed, count } = await agentHelpers.incrementAndCheckLimit({
         key: `chat-personalization-runs:${platformId}`,

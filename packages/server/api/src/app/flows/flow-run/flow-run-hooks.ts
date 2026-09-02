@@ -1,14 +1,11 @@
-import { isManualPieceTrigger, isNil, tryCatch } from '@activepieces/core-utils'
-import { ApEdition, ConsumableFeatureId, FlowRun, FlowRunStatus, FlowTriggerType, isFailedState, isFlowRunStateTerminal, RunEnvironment, WebsocketClientEvent } from '@activepieces/shared'
+import { isManualPieceTrigger, isNil } from '@activepieces/core-utils'
+import { ApEdition, FlowRun, FlowTriggerType, isFailedState, isFlowRunStateTerminal, RunEnvironment, WebsocketClientEvent } from '@activepieces/shared'
 import dayjs from 'dayjs'
 import { FastifyBaseLogger } from 'fastify'
 import { websocketService } from '../../core/websockets.service'
 import { alertsService } from '../../ee/alerts/alerts-service'
 import { system } from '../../helper/system/system'
-import { billingProvider, CreditUsageSource, toFlowRunCreditProperties } from '../../platform/billing-provider'
-import { projectService } from '../../project/project-service'
 import { flowVersionService } from '../flow-version/flow-version.service'
-import { flowRunAiUsageTracker } from './flow-run-ai-usage-tracker'
 
 const paidEditions = [ApEdition.CLOUD, ApEdition.ENTERPRISE].includes(system.getEdition())
 export const flowRunHooks = (log: FastifyBaseLogger) => ({
@@ -44,33 +41,5 @@ export const flowRunHooks = (log: FastifyBaseLogger) => ({
                 })
             }
         }
-        if (!paidEditions || isNil(flowVersion)) {
-            return
-        }
-        const { error } = await tryCatch(() => flowRunAiUsageTracker(log).track({ flowRun, flowVersion }))
-        if (error) {
-            log.warn({ error, flowRun: { id: flowRun.id } }, 'Failed to capture AI usage event')
-        }
-        if (flowRun.environment === RunEnvironment.PRODUCTION && flowRun.status !== FlowRunStatus.QUOTA_EXCEEDED) {
-            const { error: creditError } = await tryCatch(() => trackProductionRunCredit(log, flowRun))
-            if (creditError) {
-                log.warn({ error: creditError, flowRun: { id: flowRun.id } }, 'Failed to track production run credit')
-            }
-        }
     },
 })
-
-async function trackProductionRunCredit(log: FastifyBaseLogger, flowRun: FlowRun): Promise<void> {
-    const project = await projectService(log).getOne(flowRun.projectId)
-    if (isNil(project)) {
-        return
-    }
-    await billingProvider.get(log).trackFeature({
-        featureId: ConsumableFeatureId.AP_CREDITS,
-        platformId: project.platformId,
-        value: 1,
-        source: CreditUsageSource.FLOW_RUN,
-        idempotencyKey: `${flowRun.id}:run`,
-        properties: toFlowRunCreditProperties({ platformId: project.platformId, flowRun }),
-    })
-}

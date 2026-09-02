@@ -9,6 +9,7 @@ import { securityAccess } from '../../core/security/authorization/fastify-securi
 import { resolveVisibility } from '../../ee/pieces/filters/piece-filtering-utils'
 import { flowService } from '../../flows/flow/flow.service'
 import { sampleDataService } from '../../flows/step-run/sample-data.service'
+import { resolveCommunityVisibility } from '../../piece-collections/piece-visibility'
 import { userInteractionWatcher } from '../../workers/user-interaction-watcher'
 import { pieceSyncService } from '../piece-sync-service'
 import { getPiecePackageWithoutArchive, pieceMetadataService } from './piece-metadata-service'
@@ -77,7 +78,7 @@ const basePiecesController: FastifyPluginAsyncZod = async (app) => {
                 version,
                 locale: req.query.locale as LocalesEnum | undefined,
             })
-            const policy = await resolveVisibility({ platformId, projectId: req.query.projectId, log: req.log })
+            const policy = await resolveCommunityVisibility({ platformId, projectId: req.query.projectId, log: req.log }) ?? await resolveVisibility({ platformId, projectId: req.query.projectId, log: req.log })
             const visiblePiece = applyVisibilityPolicy({ policy, piece })
             return filterModelActionsByAudience(visiblePiece, req.query.audience)
         },
@@ -97,7 +98,7 @@ const basePiecesController: FastifyPluginAsyncZod = async (app) => {
                 version,
                 locale: req.query.locale as LocalesEnum | undefined,
             })
-            const policy = await resolveVisibility({ platformId, projectId: req.query.projectId, log: req.log })
+            const policy = await resolveCommunityVisibility({ platformId, projectId: req.query.projectId, log: req.log }) ?? await resolveVisibility({ platformId, projectId: req.query.projectId, log: req.log })
             const visiblePiece = applyVisibilityPolicy({ policy, piece })
             return filterModelActionsByAudience(visiblePiece, req.query.audience)
         },

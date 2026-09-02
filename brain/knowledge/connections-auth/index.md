@@ -41,7 +41,7 @@ Platform-scoped `sk-` service credentials for machine-to-machine calls. 64 chars
 
 ### User Invitations
 
-Platform owners / members with `WRITE_INVITATION` invite users to a platform (grants PlatformRole) or a project (grants named ProjectRole). Invitation link = 7-day JWT to `/invitation?token=...`; sent by email if SMTP configured, else `link` returned in the API response. Auto-accept for SERVICE key callers and already-registered users invited to a project. On accept, `provisionUserInvitation` sets platformRole or upserts a ProjectMember, then deletes the invite. Project invites need `projectRolesEnabled` + team project.
+Platform owners / members with `WRITE_INVITATION` invite users to a platform (grants PlatformRole) or a project (grants named ProjectRole). Invitation link = 7-day JWT to `/invitation?token=...`; sent by email if SMTP configured, else `link` returned in the API response. Auto-accept for SERVICE key callers and already-registered users invited to a project. On accept, `provisionUserInvitation` sets platformRole or upserts a ProjectMember, then deletes the invite. Project invites need `projectRolesEnabled` + team project — both hold on Community now that `OPEN_SOURCE_PLAN` enables project roles, and this accept path is the only writer of `project_member` rows.
 
 ### Users
 
@@ -57,7 +57,7 @@ IdP-driven provisioning (Okta/Azure AD/Google). SCIM User → AP User+UserIdenti
 - **Global Connections** — platform-shared connections
 - **OAuth Apps** — custom per-piece client credentials
 - **Managed Auth** — embedded token → AP session, auto-provisioning
-- **Secret Managers** — external vaults (AWS, Vault, Conjur, 1Password)
+- **Secret Managers** — external vaults (AWS, Vault, Conjur, 1Password), available on every edition
 - **CE Authentication** — UserIdentity, OTP, federated login
 - **EE Authentication (SSO/RBAC)** — SAML 2.0, roles, enforcement
 - **SCIM** — user provisioning (Okta, Microsoft Entra ID)

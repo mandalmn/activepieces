@@ -25,6 +25,10 @@ const FlowBuilderPage = lazyWithRetry(
   () => import('./flows/id').then((m) => ({ default: m.FlowBuilderPage })),
   'flow-builder',
 );
+const AiBuilderPage = lazyWithRetry(
+  () => import('./ai-builder').then((m) => ({ default: m.AiBuilderPage })),
+  'ai-builder',
+);
 const AnalyticsPage = lazyWithRetry(() => import('./impact'), 'analytics');
 const ProjectReleasesPage = lazyWithRetry(
   () =>
@@ -102,6 +106,20 @@ export const projectRoutes = [
           </RoutePermissionGuard>
         </ProjectDashboardLayout>
       </AgentsFlagGuard>
+    ),
+  }),
+  ...ProjectRouterWrapper({
+    path: routesThatRequireProjectId.aiBuilder,
+    element: (
+      <ProjectDashboardLayout>
+        <RoutePermissionGuard requiredPermissions={[Permission.WRITE_FLOW]}>
+          <PageTitle title="AI Builder">
+            <SuspenseWrapper>
+              <AiBuilderPage />
+            </SuspenseWrapper>
+          </PageTitle>
+        </RoutePermissionGuard>
+      </ProjectDashboardLayout>
     ),
   }),
   ...ProjectRouterWrapper({

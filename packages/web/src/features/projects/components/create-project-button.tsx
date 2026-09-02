@@ -6,39 +6,18 @@ import { AnimatedIconButton } from '@/components/custom/animated-icon-button';
 import { PlusIcon } from '@/components/icons/plus';
 import { Button } from '@/components/ui/button';
 import { SidebarMenuButton } from '@/components/ui/sidebar-shadcn';
-import { useTeamProjectLimitGuard } from '@/features/billing';
 import { cn } from '@/lib/utils';
 
 import { NewProjectDialog } from './new-project-dialog';
 
 export function CreateProjectButton({
   variant,
-  projects,
   onCreate,
   className,
 }: CreateProjectButtonProps) {
-  const {
-    hasReachedLimit,
-    ensureTeamProjectAvailable,
-    teamProjectLimitDialog,
-  } = useTeamProjectLimitGuard({ projects });
+  const trigger = triggerFor({ variant, className });
 
-  const trigger = triggerFor({
-    variant,
-    className,
-    onClick: hasReachedLimit ? () => ensureTeamProjectAvailable() : undefined,
-  });
-
-  return (
-    <>
-      {hasReachedLimit ? (
-        trigger
-      ) : (
-        <NewProjectDialog onCreate={onCreate}>{trigger}</NewProjectDialog>
-      )}
-      {teamProjectLimitDialog}
-    </>
-  );
+  return <NewProjectDialog onCreate={onCreate}>{trigger}</NewProjectDialog>;
 }
 
 function triggerFor({ variant, className, onClick }: TriggerForParams) {
@@ -89,7 +68,6 @@ type TriggerForParams = {
 
 type CreateProjectButtonProps = {
   variant: CreateProjectButtonVariant;
-  projects: Pick<ProjectWithLimits, 'type'>[];
   onCreate?: (project: ProjectWithLimits) => void;
   className?: string;
 };

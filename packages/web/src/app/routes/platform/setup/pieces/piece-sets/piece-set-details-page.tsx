@@ -1,7 +1,7 @@
 import { PieceSelection, PieceSelectionMode } from '@activepieces/shared';
 import { t } from 'i18next';
 import { ArrowLeft, Layers, Loader2 } from 'lucide-react';
-import { Navigate, useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 
 import { DashboardPageHeader } from '@/app/components/dashboard-page-header';
 import { Badge } from '@/components/ui/badge';
@@ -9,7 +9,6 @@ import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { pieceSetMutations, pieceSetQueries } from '@/features/piece-sets';
 import { piecesHooks } from '@/features/pieces';
-import { platformHooks } from '@/hooks/platform-hooks';
 import { cn } from '@/lib/utils';
 
 import { PieceSetPiecesTab } from './piece-set-pieces-tab';
@@ -36,7 +35,6 @@ function flipSelectionMode({
 const PieceSetDetailsPage = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { platform } = platformHooks.useCurrentPlatform();
   const { data: pieceSet, isLoading } = pieceSetQueries.usePieceSet(id ?? '');
   const { pieces, isLoading: piecesLoading } = piecesHooks.usePieces({
     includeHidden: true,
@@ -59,10 +57,6 @@ const PieceSetDetailsPage = () => {
       },
     });
   };
-
-  if (!platform.plan.managePiecesEnabled) {
-    return <Navigate to="/platform/setup/pieces?tab=piece-sets" replace />;
-  }
 
   if (isLoading || !pieceSet) {
     return (

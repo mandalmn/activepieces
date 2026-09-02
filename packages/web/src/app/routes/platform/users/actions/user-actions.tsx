@@ -2,6 +2,7 @@ import { PlatformRole, UserStatus } from '@activepieces/shared';
 import { t } from 'i18next';
 import {
   CircleMinus,
+  Crown,
   MoreVertical,
   Pencil,
   RotateCcw,
@@ -28,6 +29,9 @@ type UserActionsProps = {
   onDelete: (id: string, isInvitation: boolean) => void;
   onToggleStatus: (userId: string, currentStatus: UserStatus) => void;
   onUpdate: () => void;
+  onMakeOwner: (userId: string) => void;
+  isCurrentOwner: boolean;
+  isTransferringOwnership: boolean;
 };
 
 export const UserActions = ({
@@ -36,6 +40,9 @@ export const UserActions = ({
   onDelete,
   onToggleStatus,
   onUpdate,
+  onMakeOwner,
+  isCurrentOwner,
+  isTransferringOwnership,
 }: UserActionsProps) => {
   const [open, setOpen] = useState(false);
   const isInvitation = row.type === 'invitation';
@@ -78,6 +85,18 @@ export const UserActions = ({
                 <RotateCcw className="h-4 w-4" />
               )}
               {isActive ? t('Deactivate') : t('Activate')}
+            </DropdownMenuItem>
+          )}
+          {!isInvitation && !isCurrentOwner && (
+            <DropdownMenuItem
+              disabled={!isAdmin || isTransferringOwnership}
+              onSelect={() => {
+                onMakeOwner(row.data.id);
+                setOpen(false);
+              }}
+            >
+              <Crown className="h-4 w-4" />
+              {t('Make platform owner')}
             </DropdownMenuItem>
           )}
           <ConfirmationDeleteDialog

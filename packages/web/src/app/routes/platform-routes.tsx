@@ -3,12 +3,9 @@ import { Navigate } from 'react-router-dom';
 
 import { PageTitle } from '@/app/components/page-title';
 import { RouteLoadingBar } from '@/components/custom/route-loading-bar';
-import { Error, Success } from '@/features/billing';
 
 import { PlatformLayout } from '../components/platform-layout';
 
-const SettingsBilling = React.lazy(() => import('./platform/billing'));
-const SettingsUsage = React.lazy(() => import('./platform/usage'));
 const EventDestinationsPage = React.lazy(
   () => import('./platform/infra/event-destinations'),
 );
@@ -24,7 +21,7 @@ const ApiKeysPage = React.lazy(() =>
   })),
 );
 const AuditLogsPage = React.lazy(
-  () => import('./platform/security/audit-logs'),
+  () => import('./platform/security/activity-logs'),
 );
 const ProjectRolePage = React.lazy(() =>
   import('./platform/security/project-role').then((m) => ({
@@ -226,50 +223,6 @@ export const platformRoutes = [
   {
     path: '/platform/setup/branding',
     element: <Navigate to="/platform/setup/general" replace />,
-  },
-  {
-    path: '/platform/setup/billing',
-    element: (
-      <PlatformLayout>
-        <PageTitle title="Billing">
-          <SuspenseWrapper>
-            <SettingsBilling />
-          </SuspenseWrapper>
-        </PageTitle>
-      </PlatformLayout>
-    ),
-  },
-  {
-    path: '/platform/setup/usage',
-    element: (
-      <PlatformLayout>
-        <PageTitle title="Usage">
-          <SuspenseWrapper>
-            <SettingsUsage />
-          </SuspenseWrapper>
-        </PageTitle>
-      </PlatformLayout>
-    ),
-  },
-  {
-    path: '/platform/setup/billing/success',
-    element: (
-      <PlatformLayout>
-        <PageTitle title="Billing">
-          <Success />
-        </PageTitle>
-      </PlatformLayout>
-    ),
-  },
-  {
-    path: '/platform/setup/billing/error',
-    element: (
-      <PlatformLayout>
-        <PageTitle title="Billing">
-          <Error />
-        </PageTitle>
-      </PlatformLayout>
-    ),
   },
   {
     path: '/platform/security',

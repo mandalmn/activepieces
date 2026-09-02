@@ -50,7 +50,6 @@ import {
 } from '@/features/connections';
 import { PieceIconWithPieceName } from '@/features/pieces';
 import { useAuthorization } from '@/hooks/authorization-hooks';
-import { platformHooks } from '@/hooks/platform-hooks';
 import { formatUtils } from '@/lib/format-utils';
 
 const STATUS_QUERY_PARAM = 'status';
@@ -82,7 +81,6 @@ const GlobalConnectionsTable = () => {
   >([]);
   const { checkAccess } = useAuthorization();
   const location = useLocation();
-  const { platform } = platformHooks.useCurrentPlatform();
 
   const columns: ColumnDef<
     RowDataWithActions<AppConnectionWithoutSensitiveData>,
@@ -309,13 +307,11 @@ const GlobalConnectionsTable = () => {
   return (
     <div className="flex-col w-full">
       <LockedFeatureGuard
-        featureKey="GLOBAL_CONNECTIONS"
-        locked={!platform.plan.globalConnectionsEnabled}
+        locked={false}
         lockTitle={t('Enable Global Connections')}
         lockDescription={t(
           'Manage platform-wide connections to external systems.',
         )}
-        lockVideoUrl="https://cdn.activepieces.com/videos/showcase/global-connections.mp4"
       >
         <DashboardPageHeader
           description={t(

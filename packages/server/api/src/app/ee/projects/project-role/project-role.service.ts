@@ -2,8 +2,8 @@ import { ActivepiecesError, apId, ApId, ErrorCode, isNil, PlatformId, ProjectRol
 import { CreateProjectRoleRequestBody } from '@activepieces/shared'
 import { Brackets, Equal } from 'typeorm'
 import { repoFactory } from '../../../core/db/repo-factory'
-import { ProjectMemberEntity } from '../project-members/project-member.entity'
-import { ProjectRoleEntity } from './project-role.entity'
+import { ProjectMemberEntity } from '../../../project-members/project-member.entity'
+import { ProjectRoleEntity } from '../../../project-roles/project-role.entity'
 
 
 export const projectRoleRepo = repoFactory(ProjectRoleEntity)

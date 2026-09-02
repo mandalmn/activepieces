@@ -22,7 +22,6 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip';
 import { secretManagersHooks } from '@/features/secret-managers';
-import { platformHooks } from '@/hooks/platform-hooks';
 import { cn } from '@/lib/utils';
 
 type SecretInputProps = Omit<InputProps, 'value' | 'onChange'> & {
@@ -70,7 +69,6 @@ const SecretInput = React.forwardRef<HTMLInputElement, SecretInputProps>(
   ({ className, value, onChange, ...restProps }, ref) => {
     const { onBlur, name, disabled, ...otherProps } = restProps;
 
-    const { platform } = platformHooks.useCurrentPlatform();
     const { data: connections } =
       secretManagersHooks.useListSecretManagerConnections({
         connectedOnly: true,
@@ -236,14 +234,12 @@ const SecretInput = React.forwardRef<HTMLInputElement, SecretInputProps>(
 
     return (
       <div className={cn('flex items-center gap-2', className)}>
-        {platform.plan.secretManagersEnabled &&
-          connections &&
-          connections.length > 0 && (
-            <SecretManagerToggleButton
-              isActive={false}
-              onClick={toggleSecretManager}
-            />
-          )}
+        {connections && connections.length > 0 && (
+          <SecretManagerToggleButton
+            isActive={false}
+            onClick={toggleSecretManager}
+          />
+        )}
         <Input
           ref={ref}
           name={name}

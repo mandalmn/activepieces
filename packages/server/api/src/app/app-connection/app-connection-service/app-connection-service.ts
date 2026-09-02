@@ -6,7 +6,6 @@ import semver from 'semver'
 import { ArrayContains, Equal, FindOperator, FindOptionsWhere, ILike, In } from 'typeorm'
 import { repoFactory } from '../../core/db/repo-factory'
 import { projectMemberService } from '../../ee/projects/project-members/project-member.service'
-import { containsSecretManagerReference, secretManagersService } from '../../ee/secret-managers/secret-managers.service'
 import { flowService } from '../../flows/flow/flow.service'
 import { encryptUtils } from '../../helper/encryption'
 import { jwtUtils } from '../../helper/jwt-utils'
@@ -19,6 +18,7 @@ import {
     pieceMetadataService,
 } from '../../pieces/metadata/piece-metadata-service'
 import { projectRepo } from '../../project/project-service'
+import { secretResolver, usesSecretManager } from '../../secret-managers/secret-resolver'
 import { userService } from '../../user/user-service'
 import { userInteractionWatcher } from '../../workers/user-interaction-watcher'
 import {
@@ -55,7 +55,7 @@ export const appConnectionService = (log: FastifyBaseLogger) => ({
         }
 
         const validatedConnectionValue = await validateConnectionValue({
-            value: await secretManagersService(log).resolveObject({ value, platformId, projectIds }),
+            value: await secretResolver.get(log).resolveObject({ value, platformId, projectIds }),
             pieceName,
             pieceVersion,
             projectId: projectIds[0],
@@ -248,6 +248,24 @@ export const appConnectionService = (log: FastifyBaseLogger) => ({
             .addOrderBy('connection.created', 'ASC')
             .limit(limit)
             .getRawMany()
+    },
+
+    async listSafeConnections({ projectId, platformId, pieceNames, limit }: ListSafeConnectionsParams): Promise<SafeConnection[]> {
+        const query = appConnectionsRepo().createQueryBuilder('connection')
+            .select('connection.externalId', 'externalId')
+            .addSelect('connection.displayName', 'displayName')
+            .addSelect('connection.pieceName', 'pieceName')
+            .addSelect('connection.scope', 'scope')
+            .where('connection.platformId = :platformId', { platformId })
+            .andWhere(':projectId = ANY(connection.projectIds)', { projectId })
+            .andWhere('connection.status = :status', { status: AppConnectionStatus.ACTIVE })
+            .orderBy('connection.pieceName', 'ASC')
+            .addOrderBy('connection.created', 'ASC')
+            .limit(limit)
+        if (!isNil(pieceNames) && pieceNames.length > 0) {
+            query.andWhere('connection.pieceName IN (:...pieceNames)', { pieceNames })
+        }
+        return query.getRawMany()
     },
 
     async getManyConnectionStates(params: GetManyParams): Promise<ConnectionState[]> {
@@ -489,7 +507,7 @@ export const appConnectionService = (log: FastifyBaseLogger) => ({
         const { value, ...appConnectionWithoutSensitiveData } = appConnection
         return {
             ...appConnectionWithoutSensitiveData,
-            usingSecretManager: containsSecretManagerReference(value),
+            usingSecretManager: usesSecretManager(value),
         }
     },
 
@@ -996,6 +1014,20 @@ type GetOneParams = {
     projectId: ProjectId | null
     platformId: string
     id: string
+}
+
+type ListSafeConnectionsParams = {
+    projectId: ProjectId
+    platformId: PlatformId
+    pieceNames?: string[]
+    limit: number
+}
+
+export type SafeConnection = {
+    externalId: string
+    displayName: string
+    pieceName: string
+    scope: AppConnectionScope
 }
 
 type GetManyParams = {

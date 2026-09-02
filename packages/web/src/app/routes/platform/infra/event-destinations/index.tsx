@@ -12,7 +12,6 @@ import { PlusIcon } from '@/components/icons/plus';
 import { SkeletonList } from '@/components/ui/skeleton';
 import { flowsApi } from '@/features/flows';
 import { flagsHooks } from '@/hooks/flags-hooks';
-import { platformHooks } from '@/hooks/platform-hooks';
 
 import { EventDestinationDialog } from './components/event-destination-dialog';
 import { EventDestinationRow } from './components/event-destination-row';
@@ -21,8 +20,7 @@ import { parseFlowIdFromUrl } from './lib/parse-flow-id-from-url';
 import { useEventLabels } from './lib/use-event-labels';
 
 const EventDestinationsPage = () => {
-  const { platform } = platformHooks.useCurrentPlatform();
-  const isEnabled = platform.plan.eventStreamingEnabled;
+  const isEnabled = true;
   const { data: destinations, isLoading } =
     eventDestinationsCollectionUtils.useAll(isEnabled);
   const { data: webhookPrefixUrl } = flagsHooks.useFlag<string>(
@@ -76,7 +74,6 @@ const EventDestinationsPage = () => {
 
   return (
     <LockedFeatureGuard
-      featureKey="EVENT_DESTINATIONS"
       locked={!isEnabled}
       lockTitle={t('Unlock Event Streaming')}
       lockDescription={t(

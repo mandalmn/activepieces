@@ -6,4 +6,6 @@ export const formErrors = {
     invalidExternalId: 'invalidExternalId',
     invalidFileName: 'invalidFileName',
     messageRequiresContentOrFiles: 'messageRequiresContentOrFiles',
+    aiFlowPromptTooLong: 'aiFlowPromptTooLong',
+    platformApiKeyNameTooLong: 'platformApiKeyNameTooLong',
 } as const

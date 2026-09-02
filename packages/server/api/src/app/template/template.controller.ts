@@ -9,7 +9,6 @@ import { platformMustBeOwnedByCurrentUser } from '../ee/authentication/ee-author
 import { flagService } from '../flags/flag.service'
 import { migrateFlowVersionTemplateList } from '../flows/flow-version/migrations'
 import { system } from '../helper/system/system'
-import { platformService } from '../platform/platform.service'
 import { communityTemplates } from './community-templates.service'
 import { templateService } from './template.service'
 
@@ -258,10 +257,6 @@ async function loadCustomTemplatesOrReturnEmpty(
     }
     const platformId = principal.type === PrincipalType.UNKNOWN || principal.type === PrincipalType.WORKER || principal.type === PrincipalType.ONBOARDING ? null : principal.platform.id
     if (isNil(platformId)) {
-        return []
-    }
-    const platform = await platformService(log).getOneWithPlanOrThrow(platformId)
-    if (!platform.plan.manageTemplatesEnabled) {
         return []
     }
     const customTemplates = await templateService(log).list({ platformId, type: TemplateType.CUSTOM, ...query })

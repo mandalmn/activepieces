@@ -48,7 +48,6 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip';
 import { useAgentsNavVisible } from '@/features/agents';
-import { SidebarUsageLimits } from '@/features/billing';
 import { chatUtils } from '@/features/chat/lib/chat-utils';
 import {
   CreateProjectButton,
@@ -152,11 +151,6 @@ export function PrimaryRail() {
           <RailPinnedProjects collapsed={collapsed} />
         </div>
 
-        {!collapsed && (
-          <div className="mx-2 mb-1">
-            <SidebarUsageLimits />
-          </div>
-        )}
         <RailPlatformAdminButton collapsed={collapsed} />
         <RailAccountRow collapsed={collapsed} />
       </div>
@@ -430,7 +424,6 @@ function RailPinnedProjects({ collapsed }: { collapsed: boolean }) {
             {showCreateProject && (
               <CreateProjectButton
                 variant="icon"
-                projects={projects ?? []}
                 className={RAIL_HEADER_ICON_BUTTON}
                 onCreate={(project) => {
                   navigate(`/projects/${project.id}/automations`);

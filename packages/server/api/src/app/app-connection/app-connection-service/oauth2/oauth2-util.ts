@@ -5,8 +5,8 @@ import { AppConnection, AppConnectionType, BaseOAuth2ConnectionValue, GetOAuth2A
 import { isAxiosError } from 'axios'
 import { FastifyBaseLogger } from 'fastify'
 import { nanoid } from 'nanoid'
-import { secretManagersService } from '../../../ee/secret-managers/secret-managers.service'
 import { pieceMetadataService } from '../../../pieces/metadata/piece-metadata-service'
+import { secretResolver } from '../../../secret-managers/secret-resolver'
 
 export const oauth2Util = (log: FastifyBaseLogger) => ({
     formatOAuth2Response: (response: Omit<BaseOAuth2ConnectionValue, 'claimed_at'>): BaseOAuth2ConnectionValue => {
@@ -119,7 +119,7 @@ export const oauth2Util = (log: FastifyBaseLogger) => ({
             })
         }
 
-        const resolvedClientId = await secretManagersService(log).resolveString({
+        const resolvedClientId = await secretResolver.get(log).resolveString({
             key: clientId,
             platformId,
             throwOnFailure: true,

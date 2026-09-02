@@ -5,9 +5,11 @@ import {
   Sparkles,
   Table2,
   Upload,
+  Wand2,
   Workflow,
 } from 'lucide-react';
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 import { PermissionNeededTooltip } from '@/components/custom/permission-needed-tooltip';
 import { useEmbedding } from '@/components/providers/embed-provider';
@@ -18,6 +20,8 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { authenticationSession } from '@/lib/authentication-session';
+import { routesThatRequireProjectId } from '@/lib/route-utils';
 
 export const CreateNewMenu = ({
   children,
@@ -38,6 +42,7 @@ export const CreateNewMenu = ({
 }: CreateNewMenuProps) => {
   const { embedState } = useEmbedding();
   const [isOpen, setIsOpen] = useState(false);
+  const navigate = useNavigate();
 
   const showFolder = scope === 'root' && !embedState.hideFolders;
   const showTemplate = scope === 'root';
@@ -54,6 +59,23 @@ export const CreateNewMenu = ({
     >
       <DropdownMenuTrigger asChild>{children}</DropdownMenuTrigger>
       <DropdownMenuContent align={align} className="w-48">
+        <PermissionNeededTooltip hasPermission={userHasPermissionToWriteFlow}>
+          <DropdownMenuItem
+            disabled={!userHasPermissionToWriteFlow || busy}
+            onSelect={() =>
+              navigate(
+                authenticationSession.appendProjectRoutePrefix(
+                  routesThatRequireProjectId.aiBuilder,
+                ),
+              )
+            }
+            className="cursor-pointer"
+          >
+            <Wand2 className="h-4 w-4 mr-2" />
+            {t('Describe with AI')}
+          </DropdownMenuItem>
+        </PermissionNeededTooltip>
+        <DropdownMenuSeparator />
         <PermissionNeededTooltip hasPermission={userHasPermissionToWriteFlow}>
           <DropdownMenuItem
             disabled={!userHasPermissionToWriteFlow || busy}

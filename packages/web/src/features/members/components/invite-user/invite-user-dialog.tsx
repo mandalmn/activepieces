@@ -33,7 +33,6 @@ import {
 import { FormField, FormItem, Form, FormMessage } from '@/components/ui/form';
 import { Label } from '@/components/ui/label';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { useSeatLimitGuard } from '@/features/billing';
 import { userInvitationApi } from '@/features/members/api/user-invitation';
 import { PlatformRoleSelect } from '@/features/members/components/platform-role-select';
 import { ProjectRoleSelect } from '@/features/members/components/project-role-select';
@@ -122,8 +121,6 @@ const InviteUserDialogInternal = ({
   >([]);
   const [suggestionsOpen, setSuggestionsOpen] = useState(false);
   const { platform } = platformHooks.useCurrentPlatform();
-  const { handleSeatLimitError, ensureSeatsAvailable, seatLimitDialog } =
-    useSeatLimitGuard();
   const { data: isSmtpConfigured } = flagsHooks.useFlag<boolean>(
     ApFlagId.SMTP_CONFIGURED,
   );
@@ -199,9 +196,6 @@ const InviteUserDialogInternal = ({
       onInviteSuccess?.();
     },
     onError: (error) => {
-      if (handleSeatLimitError(error)) {
-        return;
-      }
       toast.error(error.message || t('Failed to send invitations'), {
         duration: 4000,
       });
@@ -252,10 +246,6 @@ const InviteUserDialogInternal = ({
         type: 'required',
         message: t('Please select a project role'),
       });
-      return;
-    }
-
-    if (!ensureSeatsAvailable(data.emails.length)) {
       return;
     }
 
@@ -421,7 +411,6 @@ const InviteUserDialogInternal = ({
           </DialogContent>
         </Dialog>
       }
-      {seatLimitDialog}
     </>
   );
 };
