@@ -1,8 +1,8 @@
 import { QueryRunner } from 'typeorm'
 import { Migration } from '../../migration'
 
-export class AddPieceCollection1842000000000 implements Migration {
-    name = 'AddPieceCollection1842000000000'
+export class AddPieceCollection1838000000000 implements Migration {
+    name = 'AddPieceCollection1838000000000'
     breaking = false
     release = '0.88.6'
     transaction = true

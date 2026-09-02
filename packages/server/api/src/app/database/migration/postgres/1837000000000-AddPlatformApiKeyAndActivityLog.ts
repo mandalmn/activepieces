@@ -1,8 +1,8 @@
 import { QueryRunner } from 'typeorm'
 import { Migration } from '../../migration'
 
-export class AddPlatformApiKeyAndActivityLog1841000000000 implements Migration {
-    name = 'AddPlatformApiKeyAndActivityLog1841000000000'
+export class AddPlatformApiKeyAndActivityLog1837000000000 implements Migration {
+    name = 'AddPlatformApiKeyAndActivityLog1837000000000'
     breaking = false
     release = '0.88.5'
     transaction = true

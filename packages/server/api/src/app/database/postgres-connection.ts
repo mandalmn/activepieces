@@ -430,12 +430,12 @@ import { AddAutoCreatePersonalProjectsToPlatform1834000000000 } from './migratio
 import { WidenMcpOAuthState1835000000000 } from './migration/postgres/1835000000000-WidenMcpOAuthState'
 import { DropTeamsBotInstallation1836000000000 } from './migration/postgres/1836000000000-DropTeamsBotInstallation'
 import { AddAiProviderStatus1837000000000 } from './migration/postgres/1837000000000-AddAiProviderStatus'
+import { AddPlatformApiKeyAndActivityLog1837000000000 } from './migration/postgres/1837000000000-AddPlatformApiKeyAndActivityLog'
 import { AddMcpOAuthTokenLastUsedAndClientKey1838000000000 } from './migration/postgres/1838000000000-AddMcpOAuthTokenLastUsedAndClientKey'
+import { AddPieceCollection1838000000000 } from './migration/postgres/1838000000000-AddPieceCollection'
 import { AddFlowProjectIdExternalIdUniqueIndex1839000000000 } from './migration/postgres/1839000000000-AddFlowProjectIdExternalIdUniqueIndex'
-import { AddPlatformApiKeyAndActivityLog1841000000000 } from './migration/postgres/1841000000000-AddPlatformApiKeyAndActivityLog'
-import { AddPieceCollection1842000000000 } from './migration/postgres/1842000000000-AddPieceCollection'
-import { AddPieceCollectionProjects1843000000000 } from './migration/postgres/1843000000000-AddPieceCollectionProjects'
-import { NormalizePieceCollectionProjects1844000000000 } from './migration/postgres/1844000000000-NormalizePieceCollectionProjects'
+import { AddPieceCollectionProjects1839000000000 } from './migration/postgres/1839000000000-AddPieceCollectionProjects'
+import { NormalizePieceCollectionProjects1840000000000 } from './migration/postgres/1840000000000-NormalizePieceCollectionProjects'
 
 const getSslConfig = (): boolean | TlsOptions => {
     const useSsl = system.get(AppSystemProp.POSTGRES_USE_SSL)
@@ -883,10 +883,10 @@ export const getMigrations = (): (new () => Migration)[] => {
         AddAiProviderStatus1837000000000,
         AddMcpOAuthTokenLastUsedAndClientKey1838000000000,
         AddFlowProjectIdExternalIdUniqueIndex1839000000000,
-        AddPlatformApiKeyAndActivityLog1841000000000,
-        AddPieceCollection1842000000000,
-        AddPieceCollectionProjects1843000000000,
-        NormalizePieceCollectionProjects1844000000000,
+        AddPlatformApiKeyAndActivityLog1837000000000,
+        AddPieceCollection1838000000000,
+        AddPieceCollectionProjects1839000000000,
+        NormalizePieceCollectionProjects1840000000000,
     ]
     return migrations
 }
