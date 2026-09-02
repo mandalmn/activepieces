@@ -1,5 +1,7 @@
+import { isNil } from '@activepieces/core-utils'
 import { ApEnvironment, UserIdentityProvider } from '@activepieces/shared'
 import { authenticationService } from '../../authentication/authentication.service'
+import { userIdentityService } from '../../authentication/user-identity/user-identity-service'
 import { FlagEntity } from '../../flags/flag.entity'
 import { system } from '../../helper/system/system'
 import { AppSystemProp } from '../../helper/system/system-props'
@@ -35,7 +37,7 @@ const seedDevUser = async (): Promise<void> => {
     const DEV_PASSWORD = '12345678'
 
 
-    const response = await authenticationService(log).signUp({
+    await authenticationService(log).signUp({
         email: DEV_EMAIL,
         password: DEV_PASSWORD,
         firstName: 'Dev',
@@ -46,8 +48,14 @@ const seedDevUser = async (): Promise<void> => {
         provider: UserIdentityProvider.EMAIL,
     })
 
+    const identity = await userIdentityService(log).getIdentityByEmail(DEV_EMAIL)
+    if (isNil(identity)) {
+        log.warn({ email: DEV_EMAIL }, '[devSeeds#seedDevUser] Sign up did not create an identity, skipping')
+        return
+    }
+
     await platformService(log).createPlatformWithProject({
-        identityId: response.id,
+        identityId: identity.id,
         name: 'dev\'s Platform',
         invalidatePreviousTokens: true,
         isFirstPlatform: true,
