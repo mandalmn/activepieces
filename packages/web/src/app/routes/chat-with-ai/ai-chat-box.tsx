@@ -51,6 +51,8 @@ import { getTextFromParts } from './lib/message-parsers';
 export function AIChatBox({
   incognito,
   agentId,
+  builder,
+  onTurnEnd,
   emptyState,
   footerNote,
   placeholder,
@@ -70,6 +72,8 @@ export function AIChatBox({
       <ChatBoxContent
         incognito={incognito}
         agentId={agentId}
+        builder={builder}
+        onTurnEnd={onTurnEnd}
         emptyState={emptyState}
         footerNote={footerNote}
         placeholder={placeholder}
@@ -84,6 +88,8 @@ export function AIChatBox({
 function ChatBoxContent({
   incognito,
   agentId,
+  builder,
+  onTurnEnd,
   emptyState,
   footerNote,
   placeholder,
@@ -109,10 +115,15 @@ function ChatBoxContent({
     setModelName,
   } = useAgentChat({
     ...(agentId === undefined ? {} : { agentId }),
+    ...(builder === undefined ? {} : { builder }),
     onTitleUpdate,
     onConversationCreated,
+    onTurnEnd,
   });
 
+  const setStoreConversationId = useChatStoreContext(
+    (s) => s.setConversationId,
+  );
   const quickReplies = useChatStoreContext((s) => s.quickReplies);
   const offerRecurringAutomation = useChatStoreContext(
     (s) => s.offerRecurringAutomation,
@@ -123,6 +134,10 @@ function ChatBoxContent({
       void setConversationId(initialConversationId);
     }
   }, [initialConversationId, setConversationId]);
+
+  useEffect(() => {
+    setStoreConversationId(conversationId ?? null);
+  }, [conversationId, setStoreConversationId]);
 
   useEffect(() => {
     if (!isStreaming) return;
@@ -472,6 +487,8 @@ function computeClaimedBuildIds(
 type AIChatBoxProps = {
   incognito: boolean;
   agentId?: string;
+  builder?: boolean;
+  onTurnEnd?: () => void;
   emptyState?: React.ReactNode;
   footerNote?: string;
   placeholder?: string;
