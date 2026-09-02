@@ -37,6 +37,7 @@ import {
 import { Textarea } from '@/components/ui/textarea';
 import { flowHooks } from '@/features/flows';
 import { projectCollectionUtils } from '@/features/projects';
+import { api } from '@/lib/api';
 import { NEW_FLOW_QUERY_PARAM } from '@/lib/route-utils';
 
 import {
@@ -295,10 +296,13 @@ export const AiPromptBuilder = () => {
           t('The planner could not interpret that request.'),
       );
     },
-    onError: () => {
+    onError: (error) => {
       form.setError('root.serverError', {
         type: 'manual',
-        message: t("We couldn't interpret your automation. Try again."),
+        message: api.extractServerErrorMessage(
+          error,
+          t("We couldn't interpret your automation. Try again."),
+        ),
       });
     },
   });
@@ -327,10 +331,13 @@ export const AiPromptBuilder = () => {
         ),
       );
     },
-    onError: () => {
+    onError: (error) => {
       form.setError('root.serverError', {
         type: 'manual',
-        message: t("We couldn't generate your automation. Try again."),
+        message: api.extractServerErrorMessage(
+          error,
+          t("We couldn't generate your automation. Try again."),
+        ),
       });
     },
   });
