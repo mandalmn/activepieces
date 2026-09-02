@@ -6,6 +6,7 @@ import { StatusCodes } from 'http-status-codes'
 import { z } from 'zod'
 import { securityAccess } from '../core/security/authorization/fastify-security'
 import { projectService } from '../project/project-service'
+import { projectMemberService } from '../project-members/project-member.service'
 import { userService } from '../user/user-service'
 import { secretManagerService } from './secret-manager.service'
 
@@ -70,6 +71,13 @@ async function assertCanList({ principal, projectId, log }: AssertCanListParams)
     }
     const project = await projectService(log).getOneOrThrow(projectId)
     if (project.platformId !== principal.platform.id) {
+        throw new ActivepiecesError({
+            code: ErrorCode.AUTHORIZATION,
+            params: { message: 'You do not have access to this project.' },
+        })
+    }
+    const role = await projectMemberService(log).getRole({ projectId, userId: principal.id })
+    if (isNil(role)) {
         throw new ActivepiecesError({
             code: ErrorCode.AUTHORIZATION,
             params: { message: 'You do not have access to this project.' },

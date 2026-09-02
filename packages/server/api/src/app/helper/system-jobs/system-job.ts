@@ -122,6 +122,7 @@ async function removeDeprecatedJobs(log: FastifyBaseLogger): Promise<void> {
         'chat-funnel-sync',
         'trial-tracker',
         'ai-credit-update-check',
+        'billing-usage-report',
         'bundle-piece',
     ]
     const knownJobNames = Object.values(SystemJobName) as string[]

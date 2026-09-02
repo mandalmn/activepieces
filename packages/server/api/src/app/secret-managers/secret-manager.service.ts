@@ -105,12 +105,12 @@ async function resolveUnknown({ value, platformId, projectIds, throwOnFailure, l
 
 async function readSecret({ reference, platformId, projectIds, log }: ReadSecretParams): Promise<string> {
     const { connectionId, path } = reference
+    const row = await getOneOrThrow({ id: connectionId, platformId })
+    assertReachableFromProjects({ row, projectIds })
     const cached = await secretManagerCache.read({ platformId, connectionId, path, log })
     if (!isNil(cached)) {
         return cached
     }
-    const row = await getOneOrThrow({ id: connectionId, platformId })
-    assertReachableFromProjects({ row, projectIds })
     const secret = await secretManagerProviders.fetch({ credentials: await decryptCredentials({ row }), path })
     await secretManagerCache.write({ platformId, connectionId, path, value: secret, log })
     return secret

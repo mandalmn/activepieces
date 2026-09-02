@@ -1,4 +1,3 @@
-import { isNil } from '@activepieces/core-utils';
 import { PlatformWithoutSensitiveData } from '@activepieces/shared';
 import {
   QueryClient,
@@ -11,8 +10,6 @@ import { toast } from 'sonner';
 
 import { platformApi } from '@/api/platforms-api';
 import { authenticationSession } from '@/lib/authentication-session';
-
-import { flagsHooks } from './flags-hooks';
 
 export const platformHooks = {
   useDeletePlatform: () => {
@@ -49,46 +46,6 @@ export const platformHooks = {
         queryClient.setQueryData(['platform', currentPlatformId], platform);
       },
     };
-  },
-  useUpdateLisenceKey: ({
-    queryClient,
-    messages,
-  }: UseUpdateLicenseKeyParams) => {
-    const currentPlatformId = authenticationSession.getPlatformId();
-
-    return useMutation({
-      mutationFn: async (tempLicenseKey: string) => {
-        if (tempLicenseKey.trim() === '') return;
-        await platformApi.activateLicenseKey(tempLicenseKey.trim());
-      },
-      onSuccess: () => {
-        queryClient.invalidateQueries({
-          queryKey: ['platform', currentPlatformId],
-        });
-        queryClient.invalidateQueries({
-          queryKey: flagsHooks.queryKey,
-        });
-        queryClient.invalidateQueries({
-          queryKey: ['platform-billing-subscription'],
-        });
-        const successMessage =
-          messages?.success === undefined
-            ? t('License activated successfully!')
-            : messages.success;
-        if (!isNil(successMessage)) {
-          toast.success(successMessage);
-        }
-      },
-      onError: () => {
-        const errorMessage =
-          messages?.error === undefined
-            ? t('Activation failed, invalid license key')
-            : messages.error;
-        if (!isNil(errorMessage)) {
-          toast.error(errorMessage);
-        }
-      },
-    });
   },
 };
 

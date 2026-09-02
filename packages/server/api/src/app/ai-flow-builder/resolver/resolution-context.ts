@@ -1,5 +1,6 @@
 import { isNil, tryCatch } from '@activepieces/core-utils'
 import { PieceMetadataModel, PieceMetadataModelSummary } from '@activepieces/pieces-framework'
+import { SuggestionType } from '@activepieces/shared'
 import { LanguageModel } from 'ai'
 import { FastifyBaseLogger } from 'fastify'
 import { appConnectionService } from '../../app-connection/app-connection-service/app-connection-service'
@@ -17,6 +18,7 @@ export const buildResolutionContext = async ({ projectId, platformId, log }: Bui
     ])
 
     const pieceCache = new Map<string, Promise<PieceMetadataModel | null>>()
+    const searchCache = new Map<string, Promise<PieceMetadataModelSummary[]>>()
 
     return {
         projectId,
@@ -34,6 +36,28 @@ export const buildResolutionContext = async ({ projectId, platformId, log }: Bui
             const pending = tryCatch(() => pieceMetadataService(log).get({ name, projectId, platformId }))
                 .then(({ data }) => data ?? null)
             pieceCache.set(name, pending)
+            return pending
+        },
+        searchCatalog({ searchQuery, suggestionType }: { searchQuery: string, suggestionType: SuggestionType }): Promise<PieceMetadataModelSummary[]> {
+            const key = `${suggestionType}:${searchQuery}`
+            const cached = searchCache.get(key)
+            if (!isNil(cached)) {
+                return cached
+            }
+            const pending = tryCatch(() => pieceMetadataService(log).list({
+                projectId,
+                platformId,
+                includeHidden: false,
+                searchQuery,
+                suggestionType,
+            })).then(({ data, error }) => {
+                if (isNil(data)) {
+                    log.warn({ error, project: { id: projectId } }, '[toolResolver] Catalog search failed')
+                    return []
+                }
+                return data
+            })
+            searchCache.set(key, pending)
             return pending
         },
     }
@@ -77,4 +101,5 @@ export type ResolutionContext = {
     connections: ConnectionBinderScope
     model: LanguageModel | null
     getPiece(params: { name: string }): Promise<PieceMetadataModel | null>
+    searchCatalog(params: { searchQuery: string, suggestionType: SuggestionType }): Promise<PieceMetadataModelSummary[]>
 }

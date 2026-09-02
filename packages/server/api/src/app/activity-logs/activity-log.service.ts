@@ -1,7 +1,6 @@
 import { apId, Cursor, isNil, sanitizeObjectForPostgresql, SeekPage } from '@activepieces/core-utils'
 import { ACTIVITY_LOG_DEFAULT_PAGE_SIZE, ActivityLog, ApplicationEvent } from '@activepieces/shared'
 import { FastifyBaseLogger } from 'fastify'
-import { LessThan } from 'typeorm'
 import { repoFactory } from '../core/db/repo-factory'
 import { applicationEvents } from '../helper/application-events'
 import { rejectedPromiseHandler } from '../helper/promise-handler'
@@ -23,21 +22,32 @@ export const activityLogService = (log: FastifyBaseLogger): ActivityLogService =
 
     async list({ platformId, limit, cursor, action, projectId }: ListParams): Promise<SeekPage<ActivityLog>> {
         const pageSize = limit ?? ACTIVITY_LOG_DEFAULT_PAGE_SIZE
-        const rows = await activityLogRepo().find({
-            where: {
-                platformId,
-                ...(isNil(action) ? {} : { action }),
-                ...(isNil(projectId) ? {} : { projectId }),
-                ...(isNil(cursor) ? {} : { created: LessThan(cursor) }),
-            },
-            order: { created: 'DESC' },
-            take: pageSize + 1,
-        })
+        const query = activityLogRepo()
+            .createQueryBuilder('activity_log')
+            .where('activity_log."platformId" = :platformId', { platformId })
+            .orderBy('activity_log.created', 'DESC')
+            .addOrderBy('activity_log.id', 'DESC')
+            .take(pageSize + 1)
+        if (!isNil(action)) {
+            query.andWhere('activity_log.action = :action', { action })
+        }
+        if (!isNil(projectId)) {
+            query.andWhere('activity_log."projectId" = :projectId', { projectId })
+        }
+        const decoded = decodeCursor(cursor)
+        if (!isNil(decoded)) {
+            query.andWhere(
+                '(activity_log.created < :created OR (activity_log.created = :created AND activity_log.id < :id))',
+                decoded,
+            )
+        }
+        const rows = await query.getMany()
         const hasMore = rows.length > pageSize
         const data = hasMore ? rows.slice(0, pageSize) : rows
+        const last = data[data.length - 1]
         return {
             data,
-            next: hasMore ? data[data.length - 1].created : null,
+            next: hasMore && !isNil(last) ? encodeCursor({ created: last.created, id: last.id }) : null,
             previous: null,
         }
     },
@@ -87,4 +97,23 @@ type ListParams = {
 type ActivityLogService = {
     initListeners(): void
     list(params: ListParams): Promise<SeekPage<ActivityLog>>
+}
+
+function encodeCursor({ created, id }: { created: string, id: string }): string {
+    return `${new Date(created).toISOString()}|${id}`
+}
+
+function decodeCursor(cursor: string | null | undefined): { created: string, id: string } | null {
+    if (isNil(cursor)) {
+        return null
+    }
+    const separatorAt = cursor.lastIndexOf('|')
+    if (separatorAt < 0) {
+        return null
+    }
+    const created = new Date(cursor.slice(0, separatorAt))
+    if (Number.isNaN(created.getTime())) {
+        return null
+    }
+    return { created: created.toISOString(), id: cursor.slice(separatorAt + 1) }
 }

@@ -57,7 +57,8 @@ const EventDestinationActions = ({
             showToast
             mutationFn={async () => {
               if (destination) {
-                eventDestinationsCollectionUtils.delete([destination.id]);
+                await eventDestinationsCollectionUtils.delete([destination.id])
+                  .isPersisted.promise;
               }
             }}
             isDanger

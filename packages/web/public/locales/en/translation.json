@@ -2727,5 +2727,6 @@
   "API style": "API style",
   "Chat completions": "Chat completions",
   "Responses": "Responses",
-  "Chat completions suits most gateways. Pick Responses for endpoints that only serve the newer OpenAI Responses API, such as Amazon Bedrock.": "Chat completions suits most gateways. Pick Responses for endpoints that only serve the newer OpenAI Responses API, such as Amazon Bedrock."
+  "Chat completions suits most gateways. Pick Responses for endpoints that only serve the newer OpenAI Responses API, such as Amazon Bedrock.": "Chat completions suits most gateways. Pick Responses for endpoints that only serve the newer OpenAI Responses API, such as Amazon Bedrock.",
+  "We couldn't match these steps to any app available in this project. Check that the pieces you need are enabled.": "We couldn't match these steps to any app available in this project. Check that the pieces you need are enabled."
 }

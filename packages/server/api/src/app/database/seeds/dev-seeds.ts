@@ -37,16 +37,19 @@ const seedDevUser = async (): Promise<void> => {
     const DEV_PASSWORD = '12345678'
 
 
-    await authenticationService(log).signUp({
-        email: DEV_EMAIL,
-        password: DEV_PASSWORD,
-        firstName: 'Dev',
-        lastName: 'User',
-        trackEvents: false,
-        platformId: null,
-        newsLetter: false,
-        provider: UserIdentityProvider.EMAIL,
-    })
+    const existingIdentity = await userIdentityService(log).getIdentityByEmail(DEV_EMAIL)
+    if (isNil(existingIdentity)) {
+        await authenticationService(log).signUp({
+            email: DEV_EMAIL,
+            password: DEV_PASSWORD,
+            firstName: 'Dev',
+            lastName: 'User',
+            trackEvents: false,
+            platformId: null,
+            newsLetter: false,
+            provider: UserIdentityProvider.EMAIL,
+        })
+    }
 
     const identity = await userIdentityService(log).getIdentityByEmail(DEV_EMAIL)
     if (isNil(identity)) {

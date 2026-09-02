@@ -1,6 +1,7 @@
 import { ActivityLog } from '@activepieces/shared'
 import { FastifyInstance } from 'fastify'
 import { StatusCodes } from 'http-status-codes'
+import { db } from '../../../helpers/db'
 import { createTestContext } from '../../../helpers/test-context'
 import { setupTestEnvironment, teardownTestEnvironment } from '../../../helpers/test-setup'
 
@@ -66,6 +67,42 @@ describe('Activity Log API', () => {
         expect(secondBody.data[0].id).not.toBe(firstBody.data[0].id)
         expect(new Date(secondBody.data[0].created).getTime())
             .toBeLessThanOrEqual(new Date(firstBody.data[0].created).getTime())
+    })
+
+    it('does not drop rows that share the same created timestamp', async () => {
+        const ctx = await createTestContext(app!)
+        const sharedCreated = new Date().toISOString()
+        const ids = ['aaaaaaaaaaaaaaaaaaaaa', 'bbbbbbbbbbbbbbbbbbbbb', 'ccccccccccccccccccccc']
+        for (const id of ids) {
+            await db.save('activity_log', {
+                id,
+                created: sharedCreated,
+                updated: sharedCreated,
+                platformId: ctx.platform.id,
+                projectId: ctx.project.id,
+                userId: ctx.user.id,
+                action: 'flow.created',
+                summary: `row ${id}`,
+                metadata: {},
+            })
+        }
+
+        const seen: string[] = []
+        let cursor: string | null = null
+        for (let page = 0; page < ids.length; page++) {
+            const query: Record<string, unknown> = { limit: 1 }
+            if (cursor !== null) {
+                query.cursor = cursor
+            }
+            const response = await ctx.get('/v1/activity-logs', query)
+            const body = response?.json()
+            expect(body.data).toHaveLength(1)
+            seen.push(body.data[0].id)
+            cursor = body.next
+        }
+
+        expect([...new Set(seen)]).toHaveLength(ids.length)
+        expect(seen.filter((id) => ids.includes(id)).length).toBeGreaterThan(0)
     })
 
     it('never leaks another platform activity', async () => {

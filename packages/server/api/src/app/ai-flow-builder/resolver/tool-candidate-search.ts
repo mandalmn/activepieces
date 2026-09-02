@@ -2,7 +2,6 @@ import { isNil, tryCatch } from '@activepieces/core-utils'
 import { ActionBase, PieceMetadataModel, PieceMetadataModelSummary, TriggerBase } from '@activepieces/pieces-framework'
 import { PieceCategory, ResolvedToolKind, SuggestionType } from '@activepieces/shared'
 import { FastifyBaseLogger } from 'fastify'
-import { pieceMetadataService } from '../../pieces/metadata/piece-metadata-service'
 import { toolSearchService } from '../../tool-search/tool-search.service'
 import { ResolutionContext } from './resolution-context'
 
@@ -115,19 +114,12 @@ async function catalogSearch({ intent, context, log }: DiscoverParams): Promise<
     })
 }
 
-async function runCatalogQuery({ searchQuery, intent, context, log }: RunCatalogQueryParams): Promise<string[]> {
-    const { data, error } = await tryCatch(() => pieceMetadataService(log).list({
-        projectId: context.projectId,
-        platformId: context.platformId,
-        includeHidden: false,
+async function runCatalogQuery({ searchQuery, intent, context }: RunCatalogQueryParams): Promise<string[]> {
+    const pieces = await context.searchCatalog({
         searchQuery,
         suggestionType: intent.kind === ResolvedToolKind.ACTION ? SuggestionType.ACTION : SuggestionType.TRIGGER,
-    }))
-    if (isNil(data)) {
-        log.warn({ error, project: { id: context.projectId } }, '[toolResolver] Catalog search failed')
-        return []
-    }
-    return data.map((piece) => piece.name)
+    })
+    return pieces.map((piece) => piece.name)
 }
 
 async function semanticSearch({ intent, context, log }: DiscoverParams): Promise<SemanticHit[]> {

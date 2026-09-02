@@ -1,4 +1,4 @@
-import { ApId, SeekPage } from '@activepieces/core-utils'
+import { apId, ApId, SeekPage } from '@activepieces/core-utils'
 import { AppConnectionScope, AppConnectionWithoutSensitiveData, ListGlobalConnectionsRequestQuery, PrincipalType, SERVICE_KEY_SECURITY_OPENAPI, UpdateGlobalConnectionValueRequestBody, UpsertGlobalConnectionRequestBody } from '@activepieces/shared'
 import { FastifyPluginAsyncZod } from 'fastify-type-provider-zod'
 import { StatusCodes } from 'http-status-codes'
@@ -19,7 +19,7 @@ export const globalConnectionController: FastifyPluginAsyncZod = async (app) => 
             projectIds: request.body.projectIds,
             scope: AppConnectionScope.PLATFORM,
             ownerId,
-            externalId: request.body.externalId ?? request.body.displayName,
+            externalId: request.body.externalId ?? apId(),
             displayName: request.body.displayName,
             pieceName: request.body.pieceName,
             type: request.body.type,

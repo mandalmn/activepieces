@@ -460,11 +460,6 @@ export function useAgentChat({
         { conversation: { id: convId }, errorCode, error: errorMessage },
         'stream error',
       );
-      if (errorCode === ErrorCode.QUOTA_EXCEEDED) {
-        onCreditsExhaustedRef.current?.();
-        settleStreamRef.current(convId, { suppressNoReply: true });
-        return;
-      }
       settleStreamRef.current(convId, { errorMessage });
     },
     onStaleCheck: (convId) => {

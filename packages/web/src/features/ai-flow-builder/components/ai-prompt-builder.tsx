@@ -326,9 +326,13 @@ export const AiPromptBuilder = () => {
         return;
       }
       setNotice(
-        t(
-          'Tell me when this should run, for example "every day at 7 AM", and I will draft it.',
-        ),
+        isNil(plan?.trigger.schedule)
+          ? t(
+              'Tell me when this should run, for example "every day at 7 AM", and I will draft it.',
+            )
+          : t(
+              "We couldn't match these steps to any app available in this project. Check that the pieces you need are enabled.",
+            ),
       );
     },
     onError: (error) => {

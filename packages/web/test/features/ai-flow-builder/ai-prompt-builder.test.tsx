@@ -415,8 +415,16 @@ describe('AiPromptBuilder', () => {
     expect(generateSpy).not.toHaveBeenCalled();
   });
 
-  it('surfaces an error when the planner request fails', async () => {
-    planSpy.mockRejectedValue(new Error('boom'));
+  it('surfaces the reason the planner request failed', async () => {
+    planSpy.mockRejectedValue(new Error('the model is not reachable'));
+    setup();
+    await submitPrompt('anything');
+
+    expect(container?.textContent).toContain('the model is not reachable');
+  });
+
+  it('falls back to a readable message when the failure carries none', async () => {
+    planSpy.mockRejectedValue(new Error(''));
     setup();
     await submitPrompt('anything');
 

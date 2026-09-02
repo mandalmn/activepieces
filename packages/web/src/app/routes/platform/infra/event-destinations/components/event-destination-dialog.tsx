@@ -123,21 +123,24 @@ const EventDestinationForm = ({
       },
     );
 
-  const handleSubmit = (data: CreatePlatformEventDestinationRequestBody) => {
-    if (destination) {
-      try {
-        eventDestinationsCollectionUtils.update(destination.id, data);
-        toast.success(t('Success'), {
-          description: t('Destination updated successfully'),
-        });
-        onClose();
-      } catch (error) {
-        toast.error(t('Error'), {
-          description: error instanceof Error ? error.message : 'Unknown error',
-        });
-      }
-    } else {
+  const handleSubmit = async (
+    data: CreatePlatformEventDestinationRequestBody,
+  ) => {
+    if (!destination) {
       createDestination(data);
+      return;
+    }
+    try {
+      await eventDestinationsCollectionUtils.update(destination.id, data)
+        .isPersisted.promise;
+      toast.success(t('Success'), {
+        description: t('Destination updated successfully'),
+      });
+      onClose();
+    } catch (error) {
+      toast.error(t('Error'), {
+        description: error instanceof Error ? error.message : 'Unknown error',
+      });
     }
   };
 

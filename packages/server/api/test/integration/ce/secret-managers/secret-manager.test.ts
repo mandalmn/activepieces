@@ -145,4 +145,18 @@ describe('Secret Managers API (community edition)', () => {
         const created = await member.post('/v1/secret-managers', vaultRequest('sneaky'))
         expect(created?.statusCode).toBe(StatusCodes.FORBIDDEN)
     })
+
+    it('stops a user from enumerating a project they are not a member of', async () => {
+        const ctx = await createTestContext(app!)
+        const otherCtx = await createTestContext(app!)
+        await otherCtx.post('/v1/secret-managers', {
+            ...vaultRequest('their project vault'),
+            scope: SecretManagerConnectionScope.PROJECT,
+            projectIds: [otherCtx.project.id],
+        })
+        const outsider = await createMemberContext(app!, ctx, { projectRole: DefaultProjectRole.ADMIN })
+
+        const listed = await outsider.get(`/v1/secret-managers?projectId=${otherCtx.project.id}`)
+        expect(listed?.statusCode).toBe(StatusCodes.FORBIDDEN)
+    })
 })

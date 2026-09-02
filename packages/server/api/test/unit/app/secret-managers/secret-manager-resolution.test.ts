@@ -16,10 +16,15 @@ vi.mock('../../../../src/app/secret-managers/providers', () => ({
     },
 }))
 
+const cacheStore = new Map<string, string>()
 vi.mock('../../../../src/app/secret-managers/secret-manager-cache', () => ({
     secretManagerCache: {
-        read: vi.fn().mockResolvedValue(null),
-        write: vi.fn().mockResolvedValue(undefined),
+        read: ({ connectionId, path }: { connectionId: string, path: string }) =>
+            Promise.resolve(cacheStore.get(`${connectionId}:${path}`) ?? null),
+        write: ({ connectionId, path, value }: { connectionId: string, path: string, value: string }) => {
+            cacheStore.set(`${connectionId}:${path}`, value)
+            return Promise.resolve()
+        },
         forget: vi.fn().mockResolvedValue(undefined),
     },
 }))
@@ -39,6 +44,7 @@ const PLATFORM = 'platform-1'
 const reference = `{{conn-1${SecretManagerFieldsSeparator}secret/data/keys/api-key}}`
 
 beforeEach(() => {
+    cacheStore.clear()
     findOneBy.mockReset()
     fetchSecret.mockReset()
     findOneBy.mockResolvedValue({
@@ -135,5 +141,34 @@ describe('resolveString', () => {
     it('resolves a reference to the stored secret', async () => {
         const resolved = await secretManagerService(log).resolveString({ key: reference, platformId: PLATFORM })
         expect(resolved).toBe('resolved-secret')
+    })
+})
+
+describe('the cache never bypasses the project scope check', () => {
+    const projectScoped = {
+        id: 'conn-1',
+        platformId: PLATFORM,
+        providerId: 'hashicorp',
+        name: 'Vault',
+        scope: 'PROJECT',
+        projectIds: ['project-allowed'],
+        auth: { iv: 'iv', data: 'data' },
+    }
+
+    it('refuses a project that is not shared, even after another project cached the value', async () => {
+        findOneBy.mockResolvedValue(projectScoped)
+
+        const allowed = await secretManagerService(log).resolveObject({
+            value: { apiKey: reference },
+            platformId: PLATFORM,
+            projectIds: ['project-allowed'],
+        })
+        expect(allowed).toEqual({ apiKey: 'resolved-secret' })
+
+        await expect(secretManagerService(log).resolveObject({
+            value: { apiKey: reference },
+            platformId: PLATFORM,
+            projectIds: ['project-other'],
+        })).rejects.toThrow()
     })
 })
