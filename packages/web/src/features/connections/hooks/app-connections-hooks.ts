@@ -134,8 +134,8 @@ export const appConnectionsMutations = {
             message: err.message,
           });
         } else if (api.isError(err)) {
-          const apError = err.response?.data as ApErrorParams;
-          switch (apError.code) {
+          const apError = err.response?.data as ApErrorParams | undefined;
+          switch (apError?.code) {
             case ErrorCode.INVALID_CLOUD_CLAIM: {
               setErrorMessage(
                 t(
@@ -198,6 +198,15 @@ export const appConnectionsMutations = {
               console.error(err);
             }
           }
+        } else {
+          setErrorMessage(
+            api.extractServerErrorMessage(
+              err,
+              t('Unexpected error, please contact support'),
+            ),
+          );
+          internalErrorToast();
+          console.error(err);
         }
       },
     });

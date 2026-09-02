@@ -7,7 +7,6 @@ import { EntityManager, In, IsNull } from 'typeorm'
 import { userIdentityRepository, userIdentityService } from '../authentication/user-identity/user-identity-service'
 import { repoFactory } from '../core/db/repo-factory'
 import { transaction } from '../core/db/transaction'
-import { platformPlanService } from '../ee/platform/platform-plan/platform-plan.service'
 import { platformProjectService } from '../ee/projects/platform-project-service'
 import { projectMemberRepo } from '../ee/projects/project-role/project-role.service'
 import { buildPaginator } from '../helper/pagination/build-paginator'
@@ -96,9 +95,7 @@ export const userService = (log: FastifyBaseLogger) => ({
 
         const isReactivation = user.status === UserStatus.INACTIVE && status === UserStatus.ACTIVE
         if (isReactivation) {
-            const reactivatingPlatformId = user.platformId
             await transaction(async (entityManager) => {
-                await platformPlanService(log).checkUsersExceededLimit({ platformId: reactivatingPlatformId, entityManager })
                 await applyUpdate(entityManager)
             })
         }

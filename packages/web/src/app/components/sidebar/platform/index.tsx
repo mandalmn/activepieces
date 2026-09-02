@@ -1,10 +1,8 @@
-import { ApEdition, ApFlagId } from '@activepieces/shared';
 import { t } from 'i18next';
 import { ComponentType, useRef } from 'react';
 import { Link } from 'react-router-dom';
 
 import { McpSvg } from '@/assets/img/custom/mcp';
-import { ChartLineIcon } from '@/components/icons/chart-line';
 import {
   ChevronLeftIcon,
   ChevronLeftIconHandle,
@@ -17,7 +15,6 @@ import { LayoutGridIcon } from '@/components/icons/layout-grid';
 import { LogInIcon } from '@/components/icons/log-in';
 import { MousePointerClickIcon } from '@/components/icons/mouse-pointer-click';
 import { PuzzleIcon } from '@/components/icons/puzzle';
-import { ReceiptIcon } from '@/components/icons/receipt';
 import { ServerIcon } from '@/components/icons/server';
 import { SettingsIcon } from '@/components/icons/settings';
 import { Settings2Icon } from '@/components/icons/settings2';
@@ -39,7 +36,6 @@ import {
   SidebarSeparator,
 } from '@/components/ui/sidebar-shadcn';
 import { useAuthorization } from '@/hooks/authorization-hooks';
-import { flagsHooks } from '@/hooks/flags-hooks';
 import { platformHooks } from '@/hooks/platform-hooks';
 import { determineDefaultRoute } from '@/lib/route-utils';
 import { cn } from '@/lib/utils';
@@ -49,7 +45,6 @@ import { SidebarUser } from '../sidebar-user';
 
 export function PlatformSidebar() {
   const { platform } = platformHooks.useCurrentPlatform();
-  const { data: edition } = flagsHooks.useFlag<ApEdition>(ApFlagId.EDITION);
   const { checkAccess } = useAuthorization();
   const defaultRoute = determineDefaultRoute({
     checkAccess,
@@ -77,31 +72,19 @@ export function PlatformSidebar() {
       to: '/platform/setup/connections',
       label: t('Global Connections'),
       icon: UnplugIcon,
-      locked: !platform.plan.globalConnectionsEnabled,
+      locked: false,
     },
     {
       to: '/platform/setup/pieces',
       label: t('Pieces'),
       icon: PuzzleIcon,
-      locked: !platform.plan.managePiecesEnabled,
+      locked: false,
     },
     {
       to: '/platform/setup/templates',
       label: t('Templates'),
       icon: LayoutGridIcon,
-      locked: !platform.plan.manageTemplatesEnabled,
-    },
-    {
-      to: '/platform/setup/billing',
-      label: t('Billing & subscription'),
-      icon: ReceiptIcon,
-      locked: edition === ApEdition.COMMUNITY,
-    },
-    {
-      to: '/platform/setup/usage',
-      label: t('Usage'),
-      icon: ChartLineIcon,
-      locked: edition === ApEdition.COMMUNITY,
+      locked: false,
     },
     {
       to: '/platform/security/embed',
@@ -164,13 +147,13 @@ export function PlatformSidebar() {
           to: '/platform/security/api-keys',
           label: t('API Keys'),
           icon: FileJson2Icon,
-          locked: !platform.plan.apiKeysEnabled,
+          locked: false,
         },
         {
           to: '/platform/security/secret-managers',
           label: t('Secret Managers'),
           icon: KeyRoundIcon,
-          locked: !platform.plan.secretManagersEnabled,
+          locked: false,
         },
       ],
     },
@@ -181,13 +164,13 @@ export function PlatformSidebar() {
           to: '/platform/security/audit-logs',
           label: t('Audit Logs'),
           icon: SquareDashedBottomCodeIcon,
-          locked: !platform.plan.auditLogEnabled,
+          locked: false,
         },
         {
           to: '/platform/infrastructure/event-destinations',
           label: t('Event Streaming'),
           icon: WebhookIcon,
-          locked: !platform.plan.eventStreamingEnabled,
+          locked: false,
         },
       ],
     },

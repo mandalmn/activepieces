@@ -29,7 +29,6 @@ import { SkeletonList } from '@/components/ui/skeleton';
 import { internalErrorToast } from '@/components/ui/sonner';
 import { globalConnectionsQueries } from '@/features/connections';
 import { projectCollectionUtils } from '@/features/projects';
-import { platformHooks } from '@/hooks/platform-hooks';
 
 type NewProjectDialogProps = {
   children: React.ReactNode;
@@ -38,8 +37,7 @@ type NewProjectDialogProps = {
 
 export const NewProjectDialog = (props: NewProjectDialogProps) => {
   const [open, setOpen] = useState(false);
-  const { platform } = platformHooks.useCurrentPlatform();
-  const globalConnectionsEnabled = platform.plan.globalConnectionsEnabled;
+  const globalConnectionsEnabled = true;
 
   const { data: globalConnectionsPage, isLoading: isLoadingConnections } =
     globalConnectionsQueries.useGlobalConnections({

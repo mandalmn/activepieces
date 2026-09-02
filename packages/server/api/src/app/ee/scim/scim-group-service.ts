@@ -8,9 +8,9 @@ import { system } from '../../helper/system/system'
 import { AppSystemProp } from '../../helper/system/system-props'
 import { platformService } from '../../platform/platform.service'
 import { projectService } from '../../project/project-service'
+import { ProjectMemberEntity } from '../../project-members/project-member.entity'
 import { userService } from '../../user/user-service'
 import { platformProjectService } from '../projects/platform-project-service'
-import { ProjectMemberEntity } from '../projects/project-members/project-member.entity'
 import { projectMemberService } from '../projects/project-members/project-member.service'
 
 const projectMemberRepo = repoFactory(ProjectMemberEntity)

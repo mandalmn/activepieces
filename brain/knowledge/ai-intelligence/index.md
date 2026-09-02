@@ -25,6 +25,7 @@ The per-project endpoint that exposes Activepieces tools to an external AI assis
 - **AI Agents** — the Agent step and its tool types
 - **MCP Server** — the per-project endpoint, tool exposure, visibility rules
 - **AI & MCP** — how the AI and MCP surfaces fit together
+- **AI Flow Builder** — the prompt-first entry point and the workflow planner behind it
 
 ## Related
 

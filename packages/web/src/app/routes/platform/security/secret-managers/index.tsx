@@ -32,12 +32,10 @@ import {
 } from '@/components/ui/tooltip';
 import { PieceIcon } from '@/features/pieces';
 import { secretManagersHooks } from '@/features/secret-managers';
-import { platformHooks } from '@/hooks/platform-hooks';
 
 import AddEditSecretManagerConnectionDialog from './connect-secret-manager-dialog';
 
 const SecretManagersPage = () => {
-  const { platform } = platformHooks.useCurrentPlatform();
   const { data: connections, isLoading: isLoadingConnections } =
     secretManagersHooks.useListSecretManagerConnections({
       listForPlatform: true,
@@ -189,8 +187,7 @@ const SecretManagersPage = () => {
 
   return (
     <LockedFeatureGuard
-      featureKey="SECRET_MANAGERS"
-      locked={!platform.plan.secretManagersEnabled}
+      locked={false}
       lockTitle={t('Enable Secret Managers')}
       lockDescription={t('Manage your secrets from a single and secure place')}
     >

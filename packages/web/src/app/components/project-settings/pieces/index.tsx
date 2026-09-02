@@ -5,17 +5,14 @@ import { t } from 'i18next';
 import { Info, Package, Puzzle, Tag, Hash, GitBranch } from 'lucide-react';
 import { useMemo, useState } from 'react';
 
-import { RequestTrial } from '@/app/components/request-trial';
 import { DataTable, RowDataWithActions } from '@/components/custom/data-table';
 import { DataTableColumnHeader } from '@/components/custom/data-table/data-table-column-header';
 import { DataTableInputPopover } from '@/components/custom/data-table/data-table-input-popover';
-import { LockedAlert } from '@/components/custom/locked-alert';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { pieceSetQueries } from '@/features/piece-sets';
 import { PieceIcon, piecesHooks } from '@/features/pieces';
 import { projectCollectionUtils } from '@/features/projects';
-import { platformHooks } from '@/hooks/platform-hooks';
 
 const columns: ColumnDef<RowDataWithActions<PieceMetadataModelSummary>>[] = [
   {
@@ -79,7 +76,6 @@ const columns: ColumnDef<RowDataWithActions<PieceMetadataModelSummary>>[] = [
 ];
 
 const PiecesSettings = () => {
-  const { platform } = platformHooks.useCurrentPlatform();
   const { project } = projectCollectionUtils.useCurrentProject();
   const [searchQuery, setSearchQuery] = useState('');
   const { pieces, isLoading } = piecesHooks.usePieces({
@@ -105,21 +101,7 @@ const PiecesSettings = () => {
 
   return (
     <div className="space-y-6">
-      {!platform.plan.managePiecesEnabled && (
-        <LockedAlert
-          title={t('Control Pieces')}
-          description={t(
-            "Show the pieces that matter most to your users and hide the ones you don't like.",
-          )}
-          button={
-            <RequestTrial
-              featureKey="ENTERPRISE_PIECES"
-              buttonVariant="basic"
-            />
-          }
-        />
-      )}
-      {platform.plan.managePiecesEnabled && (
+      {true && (
         <Alert variant="primary">
           <Info className="size-4" />
           <AlertDescription className="flex items-center gap-2">

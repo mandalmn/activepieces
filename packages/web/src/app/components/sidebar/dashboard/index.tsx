@@ -37,7 +37,6 @@ import {
   SidebarMenuItem,
 } from '@/components/ui/sidebar-shadcn';
 import { VirtualizedScrollArea } from '@/components/ui/virtualized-scroll-area';
-import { SidebarUsageLimits } from '@/features/billing';
 import { chatUtils } from '@/features/chat/lib/chat-utils';
 import {
   CreateProjectButton,
@@ -254,7 +253,6 @@ export function ProjectDashboardSidebar({
                 {shouldShowNewProjectButton && (
                   <CreateProjectButton
                     variant="icon"
-                    projects={projects ?? []}
                     onCreate={(project) => {
                       navigate(`/projects/${project.id}/flows`);
                     }}
@@ -337,7 +335,6 @@ export function ProjectDashboardSidebar({
                   <SidebarMenuItem>
                     <CreateProjectButton
                       variant="sidebar-menu"
-                      projects={projects ?? []}
                       onCreate={(project) => {
                         navigate(`/projects/${project.id}/flows`);
                       }}
@@ -349,28 +346,12 @@ export function ProjectDashboardSidebar({
           </SidebarGroup>
         </SidebarContent>
         <SidebarFooter>
-          {state === 'expanded' && <DelayedSidebarUsageLimits />}
           <SidebarPlatformAdminLink />
           <SidebarUser />
         </SidebarFooter>
       </Sidebar>
     )
   );
-}
-
-function DelayedSidebarUsageLimits() {
-  const [show, setShow] = useState(false);
-
-  useEffect(() => {
-    const timer = setTimeout(() => setShow(true), 250);
-    return () => clearTimeout(timer);
-  }, []);
-
-  return show ? (
-    <div>
-      <SidebarUsageLimits />
-    </div>
-  ) : null;
 }
 
 function SidebarPlatformAdminLink() {

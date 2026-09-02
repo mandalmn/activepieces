@@ -1,22 +1,11 @@
-import { ApEdition, ApFlagId } from '@activepieces/shared';
-import { t } from 'i18next';
 import React from 'react';
-
-import { Button } from '@/components/ui/button';
-import { useManagePlanDialogStore } from '@/features/billing';
-import { flagsHooks } from '@/hooks/flags-hooks';
-
-import { FeatureKey, RequestTrial } from './request-trial';
 
 type LockedFeatureGuardProps = {
   children: React.ReactNode;
   locked: boolean;
   lockTitle: string;
   lockDescription: string;
-  lockVideoUrl?: string;
   lockDocumentationUrl?: string;
-  featureKey: FeatureKey;
-  showContactSales?: boolean;
 };
 
 export const LockedFeatureGuard = ({
@@ -24,15 +13,8 @@ export const LockedFeatureGuard = ({
   locked,
   lockTitle,
   lockDescription,
-  lockVideoUrl,
   lockDocumentationUrl,
-  featureKey,
-  showContactSales = true,
 }: LockedFeatureGuardProps) => {
-  const { openDialog: openManagePlanDialog } = useManagePlanDialogStore();
-  const { data: edition } = flagsHooks.useFlag<ApEdition>(ApFlagId.EDITION);
-  const isCommunity = edition === ApEdition.COMMUNITY;
-
   if (!locked) {
     return children;
   }
@@ -58,33 +40,7 @@ export const LockedFeatureGuard = ({
               </>
             )}
           </p>
-
-          {isCommunity ? (
-            showContactSales && (
-              <div className="my-4">
-                <RequestTrial featureKey={featureKey} />
-              </div>
-            )
-          ) : (
-            <div className="my-4">
-              <Button onClick={() => openManagePlanDialog()}>
-                {t('Upgrade plan')}
-              </Button>
-            </div>
-          )}
         </div>
-
-        {lockVideoUrl && (
-          <video
-            autoPlay
-            loop
-            muted
-            playsInline
-            className="max-w-[70vh] rounded-lg"
-            controls={false}
-            src={lockVideoUrl}
-          />
-        )}
       </div>
     </div>
   );

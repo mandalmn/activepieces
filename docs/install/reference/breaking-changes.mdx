@@ -8,6 +8,31 @@ icon: "hammer"
 
 ### What has changed?
 
+#### Billing, subscriptions and usage limits are removed
+
+This build has no commerce. The billing and usage pages are gone, along with the Autumn/Stripe
+integration, AppSumo, licence activation and every upgrade or "contact sales" prompt.
+
+Endpoints that no longer exist: everything under `/v1/platform-billing`, including
+`POST /v1/platform-billing/activate`. `GET /v1/platforms/:id` no longer returns `usage` or
+`billingEnforced`.
+
+Limits that used to apply no longer do. A platform could previously create only one team project
+on the open-source plan and was refused the second with a 402; there is now no cap on team
+projects, users or runs, and no credit metering. `platform.plan.*` still exists and still gates
+which features are available — only the commercial half of it is gone.
+
+Three outbound calls were also removed: every new sign-up's email address was posted to a vendor
+cloud function regardless of `AP_TELEMETRY_ENABLED`, an `/ingest` route reverse-proxied to PostHog,
+and the "Contact Sales" link carried the signed-in user's name, email and a dump of every server
+flag.
+
+#### What you need to do
+
+Nothing, unless you call the removed endpoints or read `usage` / `billingEnforced` from the platform
+response. Rows already written to `platform_plan` are left untouched; only the code that read the
+commercial columns is gone.
+
 #### Brevo's Create or Update Contact stops clearing blacklist flags and attributes it was not given
 
 Four changes to the Brevo (formerly Sendinblue) piece's Create or Update Contact action alter what an existing, unchanged step does.

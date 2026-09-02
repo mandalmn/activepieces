@@ -13,7 +13,7 @@ vi.mock('../../../../../src/app/waitpoints/resume-service', () => ({
     resumeService: () => ({ resumeFromWaitpoint: mockResumeFromWaitpoint }),
 }))
 
-const { mockSet, mockWhere, mockAndWhere, mockExecute, mockFindOneBy, mockFindOne, mockSave, mockTrack, mockSendConversationUpdate } = vi.hoisted(() => ({
+const { mockSet, mockWhere, mockAndWhere, mockExecute, mockFindOneBy, mockFindOne, mockSave, mockSendConversationUpdate } = vi.hoisted(() => ({
     mockSave: vi.fn(),
     mockSet: vi.fn(),
     mockWhere: vi.fn(),
@@ -21,7 +21,6 @@ const { mockSet, mockWhere, mockAndWhere, mockExecute, mockFindOneBy, mockFindOn
     mockExecute: vi.fn().mockResolvedValue({ raw: [{ id: 'conv-1' }] }),
     mockFindOneBy: vi.fn().mockResolvedValue(null),
     mockFindOne: vi.fn().mockResolvedValue(null),
-    mockTrack: vi.fn().mockResolvedValue(undefined),
     mockSendConversationUpdate: vi.fn(),
 }))
 
@@ -122,9 +121,6 @@ vi.mock('../../../../../src/app/ee/agent/chat-analytics-sync', () => ({
     chatAnalyticsTelemetry: () => ({ sendConversationUpdate: mockSendConversationUpdate }),
 }))
 
-vi.mock('../../../../../src/app/ee/agent/chat-usage-tracker', () => ({
-    chatUsageTracker: () => ({ track: mockTrack }),
-}))
 
 const noopLogger = { info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() }
 
@@ -214,45 +210,6 @@ describe('agentRpcHandlers.saveAgentMessages — no-shrink guard against context
         expect(updates).not.toHaveProperty('messages')
         expect(updates).not.toHaveProperty('uiMessages')
         expect(updates.status).toBe('ERROR')
-    })
-})
-
-describe('agentRpcHandlers.saveAgentMessages — billing a row the run no longer owns', () => {
-    beforeEach(() => {
-        mockSet.mockClear()
-        mockFindOneBy.mockReset()
-        mockExecute.mockReset()
-        mockTrack.mockClear()
-        mockSendConversationUpdate.mockClear()
-    })
-
-    it('does not bill when the fenced save was rejected (preempted by a newer run)', async () => {
-        mockExecute.mockResolvedValue({ raw: [] })
-        mockFindOneBy.mockResolvedValue({ id: 'conv-1', messages: [{ role: 'user' }] })
-
-        await callSaveChatMessages({ conversationId: 'conv-1', runId: 'run-1', messages: [{ role: 'user' }, { role: 'assistant' }], uiMessages: [{ role: 'assistant' }] })
-
-        expect(mockTrack).not.toHaveBeenCalled()
-        expect(mockSendConversationUpdate).not.toHaveBeenCalled()
-    })
-
-    it('bills under the owning run id when the save landed', async () => {
-        mockExecute.mockResolvedValue({ raw: [{ id: 'conv-1' }] })
-        mockFindOneBy.mockResolvedValue({ id: 'conv-1', messages: [{ role: 'user' }] })
-
-        await callSaveChatMessages({ conversationId: 'conv-1', runId: 'run-1', messages: [{ role: 'user' }, { role: 'assistant' }], uiMessages: [{ role: 'assistant' }] })
-
-        expect(mockTrack).toHaveBeenCalledTimes(1)
-        expect(mockTrack.mock.calls[0][0]).toMatchObject({ runId: 'run-1' })
-    })
-
-    it('does not bill when the write returned nothing, on any driver', async () => {
-        mockExecute.mockResolvedValue({})
-        mockFindOneBy.mockResolvedValue({ id: 'conv-1', messages: [{ role: 'user' }] })
-
-        await callSaveChatMessages({ conversationId: 'conv-1', runId: 'run-1', messages: [{ role: 'user' }, { role: 'assistant' }], uiMessages: [{ role: 'assistant' }] })
-
-        expect(mockTrack).not.toHaveBeenCalled()
     })
 })
 

@@ -8,7 +8,6 @@ import { toast } from 'sonner';
 
 import { pieceCacheUtils } from '@/features/pieces';
 import { projectCollectionUtils } from '@/features/projects';
-import { platformHooks } from '@/hooks/platform-hooks';
 
 import { pieceSetsApi } from '../api/piece-sets-api';
 
@@ -24,20 +23,18 @@ export const pieceSetQueries = {
     cursor,
     limit,
   }: { cursor?: string; limit?: number } = {}) => {
-    const { platform } = platformHooks.useCurrentPlatform();
     return useQuery({
       queryKey: pieceSetKeys.page(cursor, limit),
       queryFn: () => pieceSetsApi.list({ cursor, limit }),
-      enabled: platform.plan.managePiecesEnabled,
+      enabled: true,
       meta: { showErrorDialog: true, loadSubsetOptions: {} },
     });
   },
   usePieceSet: (id: string) => {
-    const { platform } = platformHooks.useCurrentPlatform();
     return useQuery({
       queryKey: pieceSetKeys.one(id),
       queryFn: () => pieceSetsApi.get(id),
-      enabled: platform.plan.managePiecesEnabled && !!id,
+      enabled: !!id,
       // meta: { showErrorDialog: true },
     });
   },

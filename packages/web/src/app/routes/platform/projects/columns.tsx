@@ -127,7 +127,7 @@ export const projectsTableColumns = ({
       },
     });
   }
-  if (platform.plan.globalConnectionsEnabled) {
+  {
     columns.push({
       accessorKey: 'globalConnectionsCount',
       size: 135,

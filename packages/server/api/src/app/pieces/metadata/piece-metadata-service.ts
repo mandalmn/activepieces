@@ -9,6 +9,7 @@ import { EntityManager, In, IsNull } from 'typeorm'
 import { repoFactory } from '../../core/db/repo-factory'
 import { resolveVisibility } from '../../ee/pieces/filters/piece-filtering-utils'
 import { flowVersionRepo } from '../../flows/flow-version/flow-version.service'
+import { resolveCommunityVisibility } from '../../piece-collections/piece-visibility'
 import { projectService } from '../../project/project-service'
 import { pieceCache, PieceRegistryEntry } from './piece-cache'
 import { PieceMetadataEntity, PieceMetadataSchema } from './piece-metadata-entity'
@@ -28,7 +29,7 @@ export const pieceMetadataService = (log: FastifyBaseLogger) => {
                 locale,
                 log,
             }))
-            const policy = await resolveVisibility({ platformId: params.platformId, projectId: params.projectId, log })
+            const policy = await resolveCommunityVisibility({ platformId: params.platformId, projectId: params.projectId, log }) ?? await resolveVisibility({ platformId: params.platformId, projectId: params.projectId, log })
             const audience = params.audience ?? PieceAudienceFilter.HUMAN
             const audiencePieces = translatedPieces.map((piece) => ({ ...piece, actions: filterActionsByAudience(piece.actions, audience) }))
             const sortedPieces = await pieceListUtils(log).sortAndSearchPieces({
@@ -68,7 +69,7 @@ export const pieceMetadataService = (log: FastifyBaseLogger) => {
                 return undefined
             }
 
-            const policy = await resolveVisibility({ platformId, projectId, log })
+            const policy = await resolveCommunityVisibility({ platformId, projectId, log }) ?? await resolveVisibility({ platformId, projectId, log })
             if (isNil(policy)) {
                 return piece
             }

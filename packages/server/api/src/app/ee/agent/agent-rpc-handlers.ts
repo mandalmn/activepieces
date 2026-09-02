@@ -10,7 +10,6 @@ import { filesService } from '../../file/files-service'
 import { flowService } from '../../flows/flow/flow.service'
 import { engineRunCallbackService } from '../../flows/flow-run/engine-run-callback-service'
 import { flowRunService } from '../../flows/flow-run/flow-run-service'
-import { rejectedPromiseHandler } from '../../helper/promise-handler'
 import { system } from '../../helper/system/system'
 import { AppSystemProp } from '../../helper/system/system-props'
 import { knowledgeBaseService } from '../../knowledge-base/knowledge-base.service'
@@ -29,7 +28,6 @@ import { agentHelpers } from './agent-helpers'
 import { agentService } from './agent-service'
 import { agentToolPinning } from './agent-tool-pinning'
 import { chatAnalyticsTelemetry } from './chat-analytics-sync'
-import { chatUsageTracker } from './chat-usage-tracker'
 import { agentMcp } from './mcp/agent-mcp'
 import { chatPersonalizationService } from './personalization/chat-personalization-service'
 import { agentPrompt } from './prompt/agent-prompt'
@@ -392,7 +390,6 @@ export const agentRpcHandlers = (log: FastifyBaseLogger) => ({
             const conversation = await agentHelpers.conversationRepo().findOneBy({ id: input.conversationId })
             if (conversation) {
                 chatAnalyticsTelemetry(log).sendConversationUpdate({ conversation })
-                rejectedPromiseHandler(chatUsageTracker(log).track({ conversation, runId: input.runId }), log)
             }
         }
     },

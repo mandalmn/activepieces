@@ -8,7 +8,6 @@ import { entitiesMustBeOwnedByCurrentProject } from '../../authentication/author
 import { ProjectResourceType } from '../../core/security/authorization/common'
 import { securityAccess } from '../../core/security/authorization/fastify-security'
 import { assertUserHasPermissionToFlow } from '../../ee/authentication/project-role/rbac-middleware'
-import { platformPlanService } from '../../ee/platform/platform-plan/platform-plan.service'
 import { projectLimitsService } from '../../ee/projects/project-plan/project-plan.service'
 import { gitRepoService } from '../../ee/projects/project-release/git-sync/git-sync.service'
 import { networkUtils } from '../../helper/network-utils'
@@ -82,7 +81,6 @@ export const flowController: FastifyPluginAsyncZod = async (app) => {
         const turnOnFlow = request.body.type === FlowOperationType.CHANGE_STATUS && request.body.request.status === FlowStatus.ENABLED && flow.status === FlowStatus.DISABLED
         const publishDisabledFlow = request.body.type === FlowOperationType.LOCK_AND_PUBLISH && flow.status === FlowStatus.DISABLED
         if (turnOnFlow || publishDisabledFlow) {
-            await platformPlanService(request.log).checkActiveFlowsExceededLimit(request.principal.platform.id)
             await projectLimitsService(request.log).checkActiveFlowsExceededLimit({
                 projectId: request.projectId,
             })

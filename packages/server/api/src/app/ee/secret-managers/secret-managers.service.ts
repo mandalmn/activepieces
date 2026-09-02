@@ -3,9 +3,9 @@ import { ConnectSecretManagerRequest, SecretManagerConfig, SecretManagerConnecti
 import { FastifyBaseLogger } from 'fastify'
 import { repoFactory } from '../../core/db/repo-factory'
 import { encryptUtils } from '../../helper/encryption'
+import { SecretManagerEntity } from '../../secret-managers/secret-manager.entity'
 import { secretManagerCache } from './secret-manager-cache'
 import { secretManagerProvider } from './secret-manager-providers/secret-manager-providers'
-import { SecretManagerEntity } from './secret-manager.entity'
 
 const secretManagerRepository = repoFactory(SecretManagerEntity)
 

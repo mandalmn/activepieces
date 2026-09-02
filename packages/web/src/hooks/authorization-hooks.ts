@@ -1,5 +1,5 @@
 import { isNil, Permission } from '@activepieces/core-utils';
-import { ApEdition, ApFlagId, PlatformRole } from '@activepieces/shared';
+import { ApFlagId, PlatformRole } from '@activepieces/shared';
 import { useQuery } from '@tanstack/react-query';
 
 import { authenticationApi } from '@/api/authentication-api';
@@ -25,12 +25,11 @@ export const useAuthorization = () => {
       return null;
     },
     retry: false,
-    enabled:
-      !isNil(edition) && edition !== ApEdition.COMMUNITY && !isNil(platformId),
+    enabled: !isNil(edition) && !isNil(platformId),
   });
 
   const checkAccess = (permission: Permission) => {
-    if (isLoading || edition === ApEdition.COMMUNITY) {
+    if (isLoading) {
       return true;
     }
 

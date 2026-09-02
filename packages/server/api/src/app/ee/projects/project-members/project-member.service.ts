@@ -8,13 +8,10 @@ import { buildPaginator } from '../../../helper/pagination/build-paginator'
 import { paginationHelper } from '../../../helper/pagination/pagination-utils'
 import { system } from '../../../helper/system/system'
 import { projectService } from '../../../project/project-service'
+import { ProjectMemberEntity, ProjectMemberSchema } from '../../../project-members/project-member.entity'
 import { UserSchema } from '../../../user/user-entity'
 import { userService } from '../../../user/user-service'
 import { projectRoleService } from '../project-role/project-role.service'
-import {
-    ProjectMemberEntity,
-    ProjectMemberSchema,
-} from './project-member.entity'
 const repo = repoFactory(ProjectMemberEntity)
 
 export const projectMemberService = (log: FastifyBaseLogger) => ({

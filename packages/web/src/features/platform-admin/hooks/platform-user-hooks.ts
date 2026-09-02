@@ -11,6 +11,7 @@ import { t } from 'i18next';
 import { toast } from 'sonner';
 
 import { platformUserApi } from '@/api/platform-user-api';
+import { internalErrorToast } from '@/components/ui/sonner';
 import { userInvitationApi } from '@/features/members/api/user-invitation';
 import { useAuthorization } from '@/hooks/authorization-hooks';
 import { userHooks } from '@/hooks/user-hooks';
@@ -58,6 +59,25 @@ export const platformUserHooks = {
 };
 
 export const platformUserMutations = {
+  useTransferOwnership: ({
+    platformId,
+    onSuccess,
+  }: {
+    platformId: string;
+    onSuccess: () => void;
+  }) => {
+    return useMutation({
+      mutationKey: ['transfer-platform-ownership'],
+      mutationFn: async (newOwnerId: string) => {
+        await platformUserApi.transferOwnership(platformId, newOwnerId);
+      },
+      onSuccess: () => {
+        onSuccess();
+        toast.success(t('Platform owner updated'), { duration: 3000 });
+      },
+      onError: internalErrorToast,
+    });
+  },
   useDeleteUser: ({ onSuccess }: { onSuccess: () => void }) => {
     return useMutation({
       mutationKey: ['delete-user'],

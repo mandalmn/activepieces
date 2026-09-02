@@ -2,6 +2,7 @@ export { aiProviderApi } from './api/ai-provider-api';
 export { aiToolConfigApi } from './api/ai-tool-config-api';
 export { analyticsApi } from './api/analytics-api';
 export { apiKeyApi } from './api/api-key-api';
+export { activityLogApi } from './api/activity-log-api';
 export { auditEventsApi } from './api/audit-events-api';
 export { embedSubdomainApi } from './api/embed-subdomain-api';
 export { projectRoleApi } from './api/project-role-api';
@@ -26,6 +27,10 @@ export {
   signingKeyKeys,
 } from './hooks/signing-key-hooks';
 export { auditLogQueries, auditLogKeys } from './hooks/audit-log-hooks';
+export {
+  activityLogQueries,
+  activityLogKeys,
+} from './hooks/activity-log-hooks';
 export { ssoMutations } from './hooks/sso-hooks';
 export {
   projectRoleQueries,

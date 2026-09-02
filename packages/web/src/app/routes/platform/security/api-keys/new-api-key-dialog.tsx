@@ -1,4 +1,4 @@
-import { ApiKeyResponseWithValue } from '@activepieces/shared';
+import { PlatformApiKeyWithValue } from '@activepieces/shared';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation } from '@tanstack/react-query';
 import { t } from 'i18next';
@@ -42,7 +42,7 @@ export const NewApiKeyDialog = ({
   onCreate,
 }: NewApiKeyDialogProps) => {
   const [open, setOpen] = useState(false);
-  const [apiKey, setApiKey] = useState<ApiKeyResponseWithValue | undefined>(
+  const [apiKey, setApiKey] = useState<PlatformApiKeyWithValue | undefined>(
     undefined,
   );
   const form = useForm<FormSchema>({

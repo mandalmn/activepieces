@@ -18,7 +18,6 @@ import {
 } from '@/components/prompt-kit/chat-container';
 import { ScrollButton } from '@/components/prompt-kit/scroll-button';
 import { Button } from '@/components/ui/button';
-import { ChatCreditsAlert } from '@/features/billing';
 import { chatStoreSelectors } from '@/features/chat/lib/chat-store';
 import {
   ChatStoreProvider,
@@ -27,7 +26,6 @@ import {
 import { ChatUIMessage, chatPartUtils } from '@/features/chat/lib/chat-types';
 import { onboardingPrefillUtils } from '@/features/chat/lib/onboarding-prefill';
 import { useAgentChat } from '@/features/chat/lib/use-chat';
-import { useCreditsState } from '@/features/chat/lib/use-credits-state';
 import { usePersonalization } from '@/features/chat/lib/use-personalization';
 import { aiProviderQueries } from '@/features/platform-admin';
 import { platformHooks } from '@/hooks/platform-hooks';
@@ -100,7 +98,6 @@ function ChatBoxContent({
   onConversationCreated,
 }: AIChatBoxProps) {
   const queryClient = useQueryClient();
-  const credits = useCreditsState();
 
   const {
     conversationId,
@@ -122,7 +119,6 @@ function ChatBoxContent({
     onTitleUpdate,
     onConversationCreated,
     onTurnEnd,
-    onCreditsExhausted: () => credits.setCreditsExhausted(true),
   });
 
   const setStoreConversationId = useChatStoreContext(
@@ -199,8 +195,6 @@ function ChatBoxContent({
   const hasBlockingCard = useChatStoreContext((s) =>
     chatStoreSelectors.hasBlockingCard({ state: s, lastAssistantMessage }),
   );
-
-  const showBanner = credits.creditsExhausted || credits.showLowCreditsWarning;
 
   const [hasInput, setHasInput] = useState(false);
   const [promptOpen, setPromptOpen] = useState(false);
@@ -449,15 +443,6 @@ function ChatBoxContent({
                 : isEmpty
                 ? t('Ask, build, or run a task...')
                 : undefined)
-            }
-            banner={
-              showBanner && !hasBlockingCard ? (
-                <ChatCreditsAlert
-                  creditsExhausted={credits.creditsExhausted}
-                  creditsPercentUsed={credits.creditsPercentUsed}
-                  onDismiss={credits.dismissCreditsWarning}
-                />
-              ) : null
             }
           />
           {footerNote !== undefined && (

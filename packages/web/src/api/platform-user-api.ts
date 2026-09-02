@@ -15,6 +15,11 @@ export const platformUserApi = {
   delete(id: string) {
     return api.delete(`/v1/users/${id}`);
   },
+  transferOwnership(platformId: string, newOwnerId: string): Promise<void> {
+    return api.post<void>(`/v1/platforms/${platformId}/transfer-ownership`, {
+      newOwnerId,
+    });
+  },
   update(id: string, request: UpdateUserRequestBody): Promise<User> {
     return api.post<User>(`/v1/users/${id}`, request);
   },

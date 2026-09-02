@@ -24,12 +24,6 @@ export const platformApi = {
     return api.get<PlatformWithoutSensitiveData>(`/v1/platforms/${platformId}`);
   },
 
-  activateLicenseKey(licenseKey: string) {
-    return api.post<void>(`/v1/platform-billing/activate`, {
-      licenseKey,
-    });
-  },
-
   update(req: UpdatePlatformRequestBody, platformId: string) {
     return api.post<PlatformWithoutSensitiveData>(
       `/v1/platforms/${platformId}`,

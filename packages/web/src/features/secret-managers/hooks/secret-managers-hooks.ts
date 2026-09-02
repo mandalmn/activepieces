@@ -6,7 +6,6 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { t } from 'i18next';
 import { toast } from 'sonner';
 
-import { platformHooks } from '@/hooks/platform-hooks';
 import { authenticationSession } from '@/lib/authentication-session';
 
 import { secretManagersApi } from '../api/secret-managers-api';
@@ -21,7 +20,6 @@ export const secretManagersHooks = {
     listForPlatform?: boolean;
     showErrorDialog?: boolean;
   } = {}) => {
-    const { platform } = platformHooks.useCurrentPlatform();
     const projectId = listForPlatform
       ? undefined
       : authenticationSession.getProjectId()!;
@@ -36,7 +34,6 @@ export const secretManagersHooks = {
         }
         return result.data;
       },
-      enabled: platform.plan.secretManagersEnabled,
       meta: showErrorDialog
         ? { showErrorDialog: true, loadSubsetOptions: {} }
         : undefined,

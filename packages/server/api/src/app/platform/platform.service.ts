@@ -1,5 +1,5 @@
-import { ActivepiecesError, apId, ErrorCode, isNil, PlatformId, spreadIfDefined, spreadIfNotUndefined, tryCatch, UserId } from '@activepieces/core-utils'
-import { ApEdition, AuthenticationResponse, OPEN_SOURCE_PLAN, Platform, PlatformPlanLimits, PlatformRole, PlatformUsage, PlatformWithoutFederatedAuth, PlatformWithoutSensitiveData, ProjectType, SsoDomainVerification, SsoDomainVerificationStatus, UpdatePlatformRequestBody, User, UserStatus } from '@activepieces/shared'
+import { ActivepiecesError, apId, ErrorCode, isNil, PlatformId, spreadIfDefined, spreadIfNotUndefined, UserId } from '@activepieces/core-utils'
+import { ApEdition, AuthenticationResponse, OPEN_SOURCE_PLAN, Platform, PlatformPlanLimits, PlatformRole, PlatformWithoutFederatedAuth, PlatformWithoutSensitiveData, ProjectType, SsoDomainVerification, SsoDomainVerificationStatus, UpdatePlatformRequestBody, User, UserStatus } from '@activepieces/shared'
 import { FastifyBaseLogger } from 'fastify'
 import { nanoid } from 'nanoid'
 import { authenticationUtils } from '../authentication/authentication-utils'
@@ -12,7 +12,6 @@ import { defaultTheme } from '../flags/theme'
 import { system } from '../helper/system/system'
 import { projectService } from '../project/project-service'
 import { userService } from '../user/user-service'
-import { billingProvider } from './billing-provider'
 import { PlatformEntity } from './platform.entity'
 
 export const platformRepo = repoFactory<Platform>(PlatformEntity)
@@ -228,15 +227,13 @@ export const platformService = (log: FastifyBaseLogger) => ({
         if (isNil(platform)) {
             return null
         }
-        const [samlConfigured, plan, usage] = await Promise.all([
+        const [samlConfigured, plan] = await Promise.all([
             this.hasSamlConfigured(id),
             getPlan(log, platform),
-            getUsage(log, platform),
         ])
         return {
             ...platform,
             federatedAuthProviders: { saml: samlConfigured ? {} : null },
-            usage,
             plan,
         }
     },
@@ -254,17 +251,13 @@ export const platformService = (log: FastifyBaseLogger) => ({
     },
     async getOneWithPlanAndUsageOrThrow(id: PlatformId): Promise<PlatformWithoutSensitiveData> {
         const platform = await this.getOneOrThrow(id)
-        const [samlConfigured, usage, plan, billingEnforced] = await Promise.all([
+        const [samlConfigured, plan] = await Promise.all([
             this.hasSamlConfigured(id),
-            getUsage(log, platform),
             getPlan(log, platform),
-            getBillingEnforced(log, id),
         ])
         return {
             ...platform,
             federatedAuthProviders: { saml: samlConfigured ? {} : null },
-            usage,
-            billingEnforced,
             plan,
         }
     },
@@ -356,25 +349,7 @@ async function finishExistingPlatform({ user, platformId, name, invalidatePrevio
     })
 }
 
-async function getUsage(log: FastifyBaseLogger, platform: PlatformWithoutFederatedAuth): Promise<PlatformUsage | undefined> {
-    const edition = system.getEdition()
-    if (edition === ApEdition.COMMUNITY) {
-        return undefined
-    }
-    return platformPlanService(log).getUsage(platform.id)
-}
 
-async function getBillingEnforced(log: FastifyBaseLogger, platformId: PlatformId): Promise<boolean | undefined> {
-    if (system.getEdition() === ApEdition.COMMUNITY) {
-        return undefined
-    }
-    const { data, error } = await tryCatch(() => billingProvider.get(log).isBillingEnforced(platformId))
-    if (!isNil(error)) {
-        log.warn({ error, platform: { id: platformId } }, 'Failed to resolve billing enforcement for the platform payload')
-        return undefined
-    }
-    return data ?? undefined
-}
 
 async function getPlan(log: FastifyBaseLogger, platform: PlatformWithoutFederatedAuth): Promise<PlatformPlanLimits> {
     const edition = system.getEdition()

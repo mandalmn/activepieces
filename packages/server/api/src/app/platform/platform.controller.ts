@@ -17,6 +17,7 @@ import { SystemJobName } from '../helper/system-jobs/common'
 import { systemJobsSchedule } from '../helper/system-jobs/system-job'
 import { userIdentityHelper } from '../helper/user-identity-helper'
 import { userService } from '../user/user-service'
+import { platformOwnershipService } from './platform-ownership.service'
 import { platformService } from './platform.service'
 
 const edition = system.getEdition()
@@ -43,6 +44,23 @@ export const platformController: FastifyPluginAsyncZod = async (app) => {
             callerTokenVersion: req.principal.type === PrincipalType.ONBOARDING ? req.principal.tokenVersion : undefined,
         })
         return response
+    })
+
+    app.post('/:id/transfer-ownership', TransferOwnershipRequest, async (req, reply) => {
+        if (req.principal.platform.id !== req.params.id) {
+            throw new ActivepiecesError({
+                code: ErrorCode.AUTHORIZATION,
+                params: {
+                    message: 'You are not authorized to access this platform',
+                },
+            })
+        }
+        await platformOwnershipService(req.log).transfer({
+            platformId: req.params.id,
+            newOwnerId: req.body.newOwnerId,
+            currentUserId: req.principal.id,
+        })
+        return reply.status(StatusCodes.NO_CONTENT).send()
     })
 
     app.post('/:id', UpdatePlatformRequest, async (req, _res) => {
@@ -226,6 +244,25 @@ const GetPlatformRequest = {
         }),
         response: {
             [StatusCodes.OK]: PlatformWithoutSensitiveData,
+        },
+    },
+}
+
+const TransferOwnershipRequest = {
+    config: {
+        security: securityAccess.platformAdminOnly([PrincipalType.USER]),
+    },
+    schema: {
+        tags: ['platforms'],
+        description: 'Hand platform ownership to another admin on the same platform',
+        params: z.object({
+            id: ApId,
+        }),
+        body: z.object({
+            newOwnerId: ApId,
+        }),
+        response: {
+            [StatusCodes.NO_CONTENT]: z.never(),
         },
     },
 }

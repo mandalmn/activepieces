@@ -46,7 +46,7 @@ describe('Project API (CE)', () => {
             expect(responseBody.platformId).toBe(mockPlatform.id)
         })
 
-        it('should fail to create a second team project', async () => {
+        it('creates as many team projects as the team needs', async () => {
             const { mockOwner, mockPlatform } = await mockAndSaveBasicSetup({
                 plan: { billedTeamProjectsLimit: 1 },
             })
@@ -57,16 +57,16 @@ describe('Project API (CE)', () => {
                 platform: { id: mockPlatform.id },
             })
 
-            const response = await app?.inject({
+            const create = () => app?.inject({
                 method: 'POST',
                 url: '/api/v1/projects',
                 body: { displayName: faker.animal.bird() },
                 headers: { authorization: `Bearer ${testToken}` },
             })
 
-            expect(response?.statusCode).toBe(StatusCodes.PAYMENT_REQUIRED)
-            const responseBody = response?.json()
-            expect(responseBody?.code).toBe(ErrorCode.FEATURE_DISABLED)
+            expect((await create())?.statusCode).toBe(StatusCodes.CREATED)
+            expect((await create())?.statusCode).toBe(StatusCodes.CREATED)
+            expect((await create())?.statusCode).toBe(StatusCodes.CREATED)
         })
     })
 })

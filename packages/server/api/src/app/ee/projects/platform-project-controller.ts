@@ -1,5 +1,5 @@
-import { ActivepiecesError, assertNotNullOrUndefined, ErrorCode, isNil, Permission, SeekPage } from '@activepieces/core-utils'
-import { CreatePlatformProjectRequest, ListProjectRequestForPlatformQueryParams, PlatformRole, Principal, PrincipalType, ProjectType, ProjectWithLimits, SERVICE_KEY_SECURITY_OPENAPI, UpdateProjectPlatformRequest } from '@activepieces/shared'
+import { ActivepiecesError, assertNotNullOrUndefined, ErrorCode, Permission, SeekPage } from '@activepieces/core-utils'
+import { CreatePlatformProjectRequest, ListProjectRequestForPlatformQueryParams, PlatformRole, Principal, PrincipalType, ProjectWithLimits, SERVICE_KEY_SECURITY_OPENAPI, UpdateProjectPlatformRequest } from '@activepieces/shared'
 import { FastifyBaseLogger } from 'fastify'
 import { FastifyPluginAsyncZod } from 'fastify-type-provider-zod'
 import { StatusCodes } from 'http-status-codes'
@@ -24,7 +24,6 @@ export const platformProjectController: FastifyPluginAsyncZod = async (app) => {
     app.post('/', CreateProjectRequest, async (request, reply) => {
         const platformId = request.principal.platform.id
         assertNotNullOrUndefined(platformId, 'platformId')
-        await assertMaximumNumberOfProjectsReachedByEdition(platformId, request.log)
         const projectWithUsage = await platformProjectService(request.log).create({
             platformId,
             displayName: request.body.displayName,
@@ -139,32 +138,6 @@ async function assertProjectIsSafeToDelete(projectId: string, callerPlatformId: 
             params: {
                 entityType: 'project',
                 entityId: projectId,
-            },
-        })
-    }
-}
-
-async function assertMaximumNumberOfProjectsReachedByEdition(platformId: string, log: FastifyBaseLogger): Promise<void> {
-    const platform = await platformService(log).getOneWithPlanOrThrow(platformId)
-    const billedTeamProjectsLimit = platform.plan.billedTeamProjectsLimit
-
-    if (isNil(billedTeamProjectsLimit)) {
-        return
-    }
-    if (billedTeamProjectsLimit <= 0) {
-        throw new ActivepiecesError({
-            code: ErrorCode.VALIDATION,
-            params: {
-                message: 'Team projects are not available on your current plan',
-            },
-        })
-    }
-    const projectsCount = await projectService(log).countByPlatformIdAndType(platformId, ProjectType.TEAM)
-    if (projectsCount >= billedTeamProjectsLimit) {
-        throw new ActivepiecesError({
-            code: ErrorCode.FEATURE_DISABLED,
-            params: {
-                message: `Maximum limit of ${billedTeamProjectsLimit} team project(s) reached for this plan. Upgrade your plan to add more team projects.`,
             },
         })
     }

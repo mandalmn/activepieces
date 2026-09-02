@@ -5,7 +5,7 @@ import { StatusCodes } from 'http-status-codes'
 import { z } from 'zod'
 import { ProjectResourceType } from '../../../core/security/authorization/common'
 import { securityAccess } from '../../../core/security/authorization/fastify-security'
-import { ProjectMemberEntity } from './project-member.entity'
+import { ProjectMemberEntity } from '../../../project-members/project-member.entity'
 import { projectMemberService } from './project-member.service'
 
 const DEFAULT_LIMIT_SIZE = 10

@@ -18,6 +18,7 @@ import { McpOAuthTokenEntity } from '../../mcp/oauth/token/mcp-oauth-token.entit
 import { PieceMetadataEntity } from '../../pieces/metadata/piece-metadata-entity'
 import { PlatformEntity } from '../../platform/platform.entity'
 import { ProjectEntity } from '../../project/project-entity'
+import { ProjectRoleEntity } from '../../project-roles/project-role.entity'
 import { FieldEntity } from '../../tables/field/field.entity'
 import { CellEntity } from '../../tables/record/cell.entity'
 import { recordRepo, tableRepo } from '../../tables/table/table.service'
@@ -29,7 +30,6 @@ import { userInvitationRepo } from '../../user-invitations/user-invitation.servi
 import { VariableEntity } from '../../variable/variable.entity'
 import { apiKeyService } from '../api-keys/api-key-service'
 import { auditLogRepo } from '../audit-logs/audit-event-service'
-import { ProjectRoleEntity } from '../projects/project-role/project-role.entity'
 import { SigningKeyEntity } from '../signing-key/signing-key-entity'
 import { ConcurrencyPoolEntity } from './concurrency-pool/concurrency-pool.entity'
 

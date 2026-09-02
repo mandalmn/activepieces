@@ -47,13 +47,11 @@ const ProjectRolePage = () => {
 
   return (
     <LockedFeatureGuard
-      featureKey="TEAM"
       locked={!platform.plan.projectRolesEnabled}
       lockTitle={t('Project Role Management')}
       lockDescription={t(
         'Define custom roles and permissions to control what your team members can access and modify',
       )}
-      lockVideoUrl="https://cdn.activepieces.com/videos/showcase/roles.mp4"
     >
       <CenteredPage
         title={t('Project Role Management')}

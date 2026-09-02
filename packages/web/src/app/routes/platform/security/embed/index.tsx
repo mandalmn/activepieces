@@ -119,7 +119,6 @@ const EmbedPage = () => {
 
   return (
     <LockedFeatureGuard
-      featureKey="SIGNING_KEYS"
       locked={!platform.plan.embeddingEnabled}
       lockTitle={t('Unlock Embedding Through JS SDK')}
       lockDescription={t(

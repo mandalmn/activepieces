@@ -1,6 +1,6 @@
 import { isNil } from '@activepieces/core-utils'
 import { ActionClassification, AiMetadata, Audience, ErrorHandlingOptionsParam, type OutputSchema, PieceMetadata, PieceMetadataModel, PropertyGroup, WebhookRenewConfiguration } from '@activepieces/pieces-framework'
-import { AdminRetryRunsRequestBody, AgentConversation, AgentRunSource, ApplyLicenseKeyByEmailRequestBody, ExactVersionType, IncreaseAICreditsForPlatformRequestBody, PackageType, PieceCategory, PieceType, TriggerStrategy, TriggerTestStrategy, WebhookHandshakeConfiguration } from '@activepieces/shared'
+import { AdminRetryRunsRequestBody, AgentConversation, AgentRunSource, ExactVersionType, IncreaseAICreditsForPlatformRequestBody, PackageType, PieceCategory, PieceType, TriggerStrategy, TriggerTestStrategy, WebhookHandshakeConfiguration } from '@activepieces/shared'
 import { FastifyReply, FastifyRequest } from 'fastify'
 import { FastifyPluginAsyncZod } from 'fastify-type-provider-zod'
 import { StatusCodes } from 'http-status-codes'
@@ -61,10 +61,6 @@ const adminPlatformController: FastifyPluginAsyncZod = async (
     })
 
 
-    app.post('/platforms/apply-license-key', ApplyLicenseKeyByEmailRequest, async (req, res) => {
-        await adminPlatformService(req.log).applyLicenseKeyByEmail(req.body)
-        return res.status(StatusCodes.OK).send()
-    })
 
     app.post('/platforms/increase-ai-credits', IncreaseAICreditsForPlatformRequest, async (req, res) => {
         await adminPlatformService(req.log).increaseAiCredits(req.body)
@@ -148,14 +144,6 @@ const AdminRetryRunsRequest = {
     },
 }
 
-const ApplyLicenseKeyByEmailRequest = {
-    schema: {
-        body: ApplyLicenseKeyByEmailRequestBody,
-    },
-    config: {
-        security: securityAccess.public(),
-    },
-}
 
 const IncreaseAICreditsForPlatformRequest = {
     schema: {

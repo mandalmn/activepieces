@@ -8,7 +8,6 @@ import { ProjectResourceType } from '../../core/security/authorization/common'
 import { securityAccess } from '../../core/security/authorization/fastify-security'
 import { applicationEvents } from '../../helper/application-events'
 import { securityHelper } from '../../helper/security-helper'
-import { assertCreditsAndAppSumoNotExceeded } from '../../platform/billing-provider'
 import { agentDraftAi } from './agent-draft-ai'
 import { AgentEntity } from './agent-entity'
 import { agentHelpers } from './agent-helpers'
@@ -44,7 +43,6 @@ export const agentController: FastifyPluginAsyncZod = async (app) => {
 
     app.post('/draft', DraftAgentRoute, async (request): Promise<DraftAgentResponse> => {
         const platformId = request.principal.platform.id
-        await assertCreditsAndAppSumoNotExceeded({ platformId, log: request.log })
         const { allowed, count } = await agentHelpers.incrementAndCheckLimit({
             key: `agent-draft:${platformId}:${request.principal.id}`,
             limit: DRAFTS_PER_MINUTE,

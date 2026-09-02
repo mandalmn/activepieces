@@ -45,7 +45,7 @@ export const eventDestinationsCollection = createCollection<
           url: modified.url,
           events: modified.events,
         };
-        await api.patch<EventDestination>(
+        await api.post<EventDestination>(
           `/v1/event-destinations/${original.id}`,
           request,
         );
@@ -109,7 +109,7 @@ export const eventDestinationsCollectionUtils = {
     destinationId: string,
     request: UpdatePlatformEventDestinationRequestBody,
   ) => {
-    eventDestinationsCollection.update(destinationId, (draft) => {
+    return eventDestinationsCollection.update(destinationId, (draft) => {
       Object.assign(
         draft,
         Object.fromEntries(
@@ -120,7 +120,7 @@ export const eventDestinationsCollectionUtils = {
   },
 
   delete: (destinationIds: string[]) => {
-    eventDestinationsCollection.delete(destinationIds);
+    return eventDestinationsCollection.delete(destinationIds);
   },
 
   useTestEventDestination: () => {

@@ -2,13 +2,14 @@ import { ActivepiecesError, ErrorCode, isNil } from '@activepieces/core-utils'
 import { Principal, PrincipalType } from '@activepieces/shared'
 import { FastifyBaseLogger } from 'fastify'
 import { nanoid } from 'nanoid'
+import { platformApiKeyService } from '../../../../api-keys/platform-api-key.service'
 import { accessTokenManager } from '../../../../authentication/lib/access-token-manager'
 import { apiKeyService } from '../../../../ee/api-keys/api-key-service'
 
 export const authenticateOrThrow = async (log: FastifyBaseLogger, rawToken: string | null): Promise<Principal> => {
     if (!isNil(rawToken) && rawToken.startsWith('Bearer sk-')) {
         const trimBearerPrefix = rawToken.replace('Bearer ', '')
-        return createPrincipalForApiKey(trimBearerPrefix)
+        return createPrincipalForApiKey(log, trimBearerPrefix)
     }
     if (!isNil(rawToken) && rawToken.startsWith('Bearer ')) {
         const trimBearerPrefix = rawToken.replace('Bearer ', '')
@@ -21,8 +22,9 @@ export const authenticateOrThrow = async (log: FastifyBaseLogger, rawToken: stri
 }
 
 
-async function createPrincipalForApiKey(apiKeyValue: string): Promise<Principal> {
-    const apiKey = await apiKeyService.getByValue(apiKeyValue)
+async function createPrincipalForApiKey(log: FastifyBaseLogger, apiKeyValue: string): Promise<Principal> {
+    const apiKey = await platformApiKeyService(log).getByValue({ value: apiKeyValue })
+        ?? await apiKeyService.getByValue(apiKeyValue)
     if (isNil(apiKey)) {
         throw new ActivepiecesError({
             code: ErrorCode.AUTHENTICATION,
