@@ -152,6 +152,26 @@ const CATALOG: PieceSeed[] = [
         ],
     },
     {
+        name: '@activepieces/piece-salesforce',
+        displayName: 'Salesforce',
+        description: 'Customer relationship management platform',
+        categories: [PieceCategory.SALES_AND_CRM],
+        requiresAuth: true,
+        actions: [
+            action({ name: 'run_query', displayName: 'Run Query', description: 'Run a SOQL query against Salesforce', aiDescription: 'Reads records out of Salesforce with a SOQL query.', classification: 'SEARCH', required: [{ name: 'query', type: 'LONG_TEXT' }] }),
+        ],
+    },
+    {
+        name: '@activepieces/piece-capsule-crm',
+        displayName: 'Capsule CRM',
+        description: 'Customer relationship management platform',
+        categories: [PieceCategory.SALES_AND_CRM],
+        requiresAuth: true,
+        actions: [
+            action({ name: 'find_contact', displayName: 'Find Contact', description: 'Find a contact in Capsule CRM', aiDescription: 'Looks a contact up in Capsule CRM.', classification: 'SEARCH', required: [{ name: 'searchTerm', type: 'SHORT_TEXT' }] }),
+        ],
+    },
+    {
         name: '@activepieces/piece-slack',
         displayName: 'Slack',
         description: 'Channel-based messaging platform',

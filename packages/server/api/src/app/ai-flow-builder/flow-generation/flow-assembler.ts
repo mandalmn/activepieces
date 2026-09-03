@@ -16,15 +16,19 @@ import {
     StepLocationRelativeToParent,
     ToolResolutionStatus,
 } from '@activepieces/shared'
+import { LanguageModel } from 'ai'
 import { FastifyBaseLogger } from 'fastify'
 import { flowService } from '../../flows/flow/flow.service'
 import { pieceMetadataService } from '../../pieces/metadata/piece-metadata-service'
+import { aiModelResolver } from '../ai-model-resolver'
 import { stepInputBuilder } from './step-input-builder'
+import { stepInputSuggester } from './step-input-suggester'
 
 const MAX_FLOW_NAME_LENGTH = 60
 
 export const flowAssembler = (log: FastifyBaseLogger): FlowAssembler => ({
-    async assemble({ plan, projectId, platformId, userId }: AssembleParams): Promise<AssembledFlow> {
+    async assemble({ plan, prompt, projectId, platformId, userId }: AssembleParams): Promise<AssembledFlow> {
+        const model = await resolveModel({ projectId, platformId, log })
         const flow = await flowService(log).create({
             projectId,
             request: { projectId, displayName: flowNameOf({ plan }) },
@@ -46,6 +50,8 @@ export const flowAssembler = (log: FastifyBaseLogger): FlowAssembler => ({
                 step,
                 parentStepName,
                 upstreamStepName,
+                model,
+                prompt,
                 projectId,
                 platformId,
                 userId,
@@ -143,7 +149,7 @@ function unresolvedTriggerReport({ trigger, flow }: { trigger: ResolvedTrigger, 
     }
 }
 
-async function addStep({ flow, step, parentStepName, upstreamStepName, projectId, platformId, userId, log }: AddStepParams): Promise<StepOutcome> {
+async function addStep({ flow, step, parentStepName, upstreamStepName, model, prompt, projectId, platformId, userId, log }: AddStepParams): Promise<StepOutcome> {
     const tool = step.tool
     if (step.status === ToolResolutionStatus.NO_TOOL_REQUIRED || isNil(tool)) {
         return { flow: null, stepName: null, report: skippedReport({ step }) }
@@ -156,7 +162,16 @@ async function addStep({ flow, step, parentStepName, upstreamStepName, projectId
     }
 
     const stepName = flowStructureUtil.findUnusedName(flow.version.trigger)
-    const built = stepInputBuilder.build({ object, connection: tool.connection, upstreamStepName })
+    const seededInput = isNil(model) ? {} : await stepInputSuggester.suggest({
+        model,
+        prompt,
+        summary: step.summary,
+        piece,
+        action: object,
+        earlierStepNames: flowStructureUtil.getAllSteps(flow.version.trigger).map((existing) => existing.name),
+        log,
+    })
+    const built = stepInputBuilder.build({ object, connection: tool.connection, upstreamStepName, seededInput })
 
     const { data, error } = await tryCatch(() => flowService(log).update({
         id: flow.id,
@@ -321,14 +336,22 @@ type AddStepParams = {
     step: ResolvedStep
     parentStepName: string
     upstreamStepName: string | null
+    model: LanguageModel | null
+    prompt: string
     projectId: string
     platformId: string
     userId: string | undefined
     log: FastifyBaseLogger
 }
 
+async function resolveModel({ projectId, platformId, log }: { projectId: string, platformId: string, log: FastifyBaseLogger }) {
+    const { data } = await tryCatch(() => aiModelResolver(log).resolveTextModel({ projectId, platformId }))
+    return data?.model ?? null
+}
+
 type AssembleParams = {
     plan: ResolvedWorkflowPlan
+    prompt: string
     projectId: string
     platformId: string
     userId: string | undefined

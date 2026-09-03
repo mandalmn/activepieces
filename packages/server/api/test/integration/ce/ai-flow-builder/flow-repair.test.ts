@@ -338,6 +338,7 @@ describe('AI auto repair', () => {
             const flowId = await build({ ctx, steps: [SHEETS_STEP] })
             const stepName = (await flowOf({ ctx, flowId })).version.trigger.nextAction.name
             await setInput({ ctx, flowId, stepName, input: { spreadsheetId: 'sheet-1' } })
+            generateTextMock.mockClear()
 
             const result = await repair({ ctx, flowId })
 
