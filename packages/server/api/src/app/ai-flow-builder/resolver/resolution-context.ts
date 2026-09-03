@@ -4,6 +4,8 @@ import { SuggestionType } from '@activepieces/shared'
 import { LanguageModel } from 'ai'
 import { FastifyBaseLogger } from 'fastify'
 import { appConnectionService } from '../../app-connection/app-connection-service/app-connection-service'
+import { system } from '../../helper/system/system'
+import { AppSystemProp } from '../../helper/system/system-props'
 import { pieceMetadataService } from '../../pieces/metadata/piece-metadata-service'
 import { aiModelResolver } from '../ai-model-resolver'
 import { connectionBinder, ConnectionBinderScope } from './connection-lookup'
@@ -25,6 +27,7 @@ export const buildResolutionContext = async ({ projectId, platformId, log }: Bui
         platformId,
         catalog,
         enabledPieceNames: new Set(catalog.map((piece) => piece.name)),
+        agentsEnabled: system.getBoolean(AppSystemProp.AGENTS_ENABLED) ?? false,
         connectedPieceNames,
         connections: connectionBinder({ projectId, platformId, log }),
         model,
@@ -97,6 +100,7 @@ export type ResolutionContext = {
     platformId: string
     catalog: PieceMetadataModelSummary[]
     enabledPieceNames: ReadonlySet<string>
+    agentsEnabled: boolean
     connectedPieceNames: ReadonlySet<string>
     connections: ConnectionBinderScope
     model: LanguageModel | null

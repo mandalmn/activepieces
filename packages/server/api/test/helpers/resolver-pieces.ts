@@ -152,6 +152,16 @@ const CATALOG: PieceSeed[] = [
         ],
     },
     {
+        name: '@activepieces/piece-agentrunner',
+        displayName: 'Agent Runner',
+        description: 'Run an agent that reasons over a prompt and uses tools',
+        categories: [PieceCategory.ARTIFICIAL_INTELLIGENCE],
+        requiresAuth: false,
+        actions: [
+            action({ name: 'run_agent', displayName: 'Run Agent', description: 'Handles complex multi step tasks by reasoning and using tools', aiDescription: 'Runs an agent that reasons over your prompt and calls the tools you attach.', classification: 'WRITE', required: [{ name: 'prompt', type: 'LONG_TEXT' }] }),
+        ],
+    },
+    {
         name: '@activepieces/piece-salesforce',
         displayName: 'Salesforce',
         description: 'Customer relationship management platform',

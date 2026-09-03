@@ -7,6 +7,7 @@ import { ResolutionContext } from './resolution-context'
 
 const MAX_PIECE_SHORTLIST = 8
 const SEARCH_LIMIT = 12
+const NEEDS_AGENT_RUNTIME: ReadonlySet<string> = new Set(['run_agent'])
 const PIECE_NAME_PREFIX = '@activepieces/piece-'
 
 const EMPTY_SIGNALS: DiscoverySignals = { matchedNameTokens: 0, nameTokenCount: 0, descriptionHits: 0, cosine: null, catalogRank: null, semanticRank: null }
@@ -193,7 +194,9 @@ async function expandPiece({ pieceName, signals, intent, context }: ExpandParams
     const objects: (ActionBase | TriggerBase)[] = intent.kind === ResolvedToolKind.ACTION
         ? Object.values(piece.actions)
         : Object.values(piece.triggers)
-    return objects.map((object) => toCandidate({ piece, object, signals, context }))
+    return objects
+        .filter((object) => context.agentsEnabled || !NEEDS_AGENT_RUNTIME.has(object.name))
+        .map((object) => toCandidate({ piece, object, signals, context }))
 }
 
 function toCandidate({ piece, object, signals, context }: ToCandidateParams): ToolCandidate {
