@@ -91,3 +91,49 @@ describe('A product the person named', () => {
         expect(step.tool?.pieceName).not.toBe(CAPSULE)
     })
 })
+
+describe('A whole request naming two different apps', () => {
+    const outlookToTeams = {
+        version: WORKFLOW_PLAN_VERSION,
+        name: 'Outlook to Teams',
+        description: 'Read mail and post a summary',
+        trigger: {
+            kind: WorkflowTriggerKind.SCHEDULE,
+            summary: 'Every morning',
+            service: null,
+            product: null,
+            schedule: { cronExpression: '0 9 * * *', timezone: 'Asia/Ulaanbaatar', description: 'every morning' },
+        },
+        steps: [
+            { id: 'step_1', dependsOn: [], kind: WorkflowStepKind.FETCH, summary: 'Read the emails that arrived in the mailbox', service: 'email', product: 'outlook' },
+            { id: 'step_2', dependsOn: ['step_1'], kind: WorkflowStepKind.TRANSFORM, summary: 'Summarise the emails', service: null, product: null },
+            { id: 'step_3', dependsOn: ['step_2'], kind: WorkflowStepKind.OUTPUT, summary: 'Send the summary to my colleagues in a chat channel', service: 'chat', product: 'teams' },
+        ],
+    }
+
+    it('gives each step the app that step named, not a generic HTTP request', async () => {
+        const ctx = await seeded()
+
+        const body = await resolve({ ctx, plan: outlookToTeams })
+
+        const [read, , deliver] = body.plan.steps
+        expect(read.tool.pieceName).toBe('@activepieces/piece-microsoft-outlook')
+        expect(deliver.tool.pieceName).toBe('@activepieces/piece-microsoft-teams')
+    })
+
+    it('still finds the app when the planner puts the product in the service field', async () => {
+        const ctx = await seeded()
+
+        const body = await resolve({
+            ctx,
+            plan: {
+                ...outlookToTeams,
+                steps: outlookToTeams.steps.map((step) => ({ ...step, service: step.product ?? step.service, product: null })),
+            },
+        })
+
+        const [read, , deliver] = body.plan.steps
+        expect(read.tool.pieceName).toBe('@activepieces/piece-microsoft-outlook')
+        expect(deliver.tool.pieceName).toBe('@activepieces/piece-microsoft-teams')
+    })
+})

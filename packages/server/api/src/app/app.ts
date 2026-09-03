@@ -70,6 +70,7 @@ import { signingKeyModule } from './ee/signing-key/signing-key-module'
 import { userModule } from './ee/users/user.module'
 import { eventDestinationModule } from './event-destinations/event-destinations.module'
 import { fileModule } from './file/file.module'
+import { communityFlagsHooks } from './flags/community-flags.hooks'
 import { flagModule } from './flags/flag.module'
 import { flagHooks } from './flags/flags.hooks'
 import { flowBackgroundJobs } from './flows/flow/flow.jobs'
@@ -392,6 +393,7 @@ export const setupApp = async (app: FastifyInstance): Promise<FastifyInstance> =
             await app.register(communityGlobalConnectionModule)
             await app.register(pieceCollectionModule)
             await app.register(secretManagerModule)
+            flagHooks.set(communityFlagsHooks)
             await app.register(communityProjectRoleModule)
             await app.register(communityProjectMemberModule)
             await app.register(platformProjectModule)

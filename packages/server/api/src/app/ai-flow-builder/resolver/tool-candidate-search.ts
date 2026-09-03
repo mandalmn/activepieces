@@ -66,7 +66,11 @@ function intentText({ intent }: { intent: ToolIntent }): string {
 }
 
 function namedProductPiece({ intent, context }: { intent: ToolIntent, context: ResolutionContext }): string | null {
-    const wanted = tokenize(intent.product ?? '')
+    return pieceNamedBy({ text: intent.product, context }) ?? pieceNamedBy({ text: intent.service, context })
+}
+
+function pieceNamedBy({ text, context }: { text: string | null | undefined, context: ResolutionContext }): string | null {
+    const wanted = tokenize(text ?? '')
     if (wanted.length === 0) {
         return null
     }
