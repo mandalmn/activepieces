@@ -7,11 +7,21 @@ const SUGGEST_TIMEOUT_MS = 25_000
 const MAX_OPTIONS_LISTED = 12
 const MAX_VALUE_LENGTH = 2_000
 const CREDENTIAL_MARKER = /\{\{\s*connections\s*\[[^\]]*\]\s*\}\}/
-const UNWRITABLE_PROPERTY_TYPES = new Set<PropertyType>([PropertyType.MARKDOWN, PropertyType.CUSTOM_AUTH, PropertyType.OAUTH2, PropertyType.SECRET_TEXT, PropertyType.BASIC_AUTH])
+const INFERABLE_PROPERTY_TYPES = new Set<PropertyType>([
+    PropertyType.SHORT_TEXT,
+    PropertyType.LONG_TEXT,
+    PropertyType.RICH_TEXT,
+    PropertyType.NUMBER,
+    PropertyType.CHECKBOX,
+    PropertyType.DATE_TIME,
+    PropertyType.COLOR,
+    PropertyType.STATIC_DROPDOWN,
+    PropertyType.STATIC_MULTI_SELECT_DROPDOWN,
+])
 
 export const stepInputSuggester = {
     async suggest({ model, prompt, summary, piece, action, earlierStepNames, log }: SuggestParams): Promise<Record<string, unknown>> {
-        const writable = Object.entries(action.props).filter(([, property]) => !UNWRITABLE_PROPERTY_TYPES.has(property.type))
+        const writable = Object.entries(action.props).filter(([, property]) => INFERABLE_PROPERTY_TYPES.has(property.type))
         if (writable.length === 0) {
             return {}
         }
