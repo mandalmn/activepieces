@@ -7,6 +7,7 @@ import { ResolutionContext } from './resolution-context'
 
 const MAX_PIECE_SHORTLIST = 8
 const SEARCH_LIMIT = 12
+const NEEDS_AGENT_RUNTIME: ReadonlySet<string> = new Set(['run_agent'])
 const PIECE_NAME_PREFIX = '@activepieces/piece-'
 
 const EMPTY_SIGNALS: DiscoverySignals = { matchedNameTokens: 0, nameTokenCount: 0, descriptionHits: 0, cosine: null, catalogRank: null, semanticRank: null }
@@ -41,10 +42,19 @@ export const toolCandidateSearch = {
         catalogNames.forEach((pieceName, index) => record({ pieceName, patch: { catalogRank: index } }))
         semanticNames.forEach(({ pieceName, cosine }, index) => record({ pieceName, patch: { semanticRank: index, cosine } }))
 
-        const shortlist = [...scores.entries()]
+        const named = namedProductPiece({ intent, context })
+        if (!isNil(named) && !scores.has(named)) {
+            record({ pieceName: named, patch: EMPTY_SIGNALS })
+        }
+
+        const ranked = [...scores.entries()]
             .filter(([pieceName]) => context.enabledPieceNames.has(pieceName))
             .sort(([leftName, left], [rightName, right]) =>
                 discoveryRank({ signals: right, pieceName: rightName, context }) - discoveryRank({ signals: left, pieceName: leftName, context }))
+
+        const shortlist = (isNil(named)
+            ? ranked
+            : [...ranked.filter(([pieceName]) => pieceName === named), ...ranked.filter(([pieceName]) => pieceName !== named)])
             .slice(0, MAX_PIECE_SHORTLIST)
 
         const expanded = await Promise.all(shortlist.map(([pieceName, signals]) => expandPiece({ pieceName, signals, intent, context })))
@@ -53,7 +63,26 @@ export const toolCandidateSearch = {
 }
 
 function intentText({ intent }: { intent: ToolIntent }): string {
-    return [intent.summary, intent.service].filter((part) => !isNil(part)).join(' ')
+    return [intent.summary, intent.service, intent.product].filter((part) => !isNil(part)).join(' ')
+}
+
+function namedProductPiece({ intent, context }: { intent: ToolIntent, context: ResolutionContext }): string | null {
+    return pieceNamedBy({ text: intent.product, context }) ?? pieceNamedBy({ text: intent.service, context })
+}
+
+function pieceNamedBy({ text, context }: { text: string | null | undefined, context: ResolutionContext }): string | null {
+    const wanted = tokenize(text ?? '')
+    if (wanted.length === 0) {
+        return null
+    }
+    const match = context.catalog.find((piece) => {
+        if (!context.enabledPieceNames.has(piece.name)) {
+            return false
+        }
+        const names = new Set(tokenize(`${piece.displayName} ${shortPieceName(piece.name).replace(/-/g, ' ')}`))
+        return wanted.every((token) => names.has(token))
+    })
+    return match?.name ?? null
 }
 
 export function tokenizeIntent(text: string): string[] {
@@ -165,7 +194,9 @@ async function expandPiece({ pieceName, signals, intent, context }: ExpandParams
     const objects: (ActionBase | TriggerBase)[] = intent.kind === ResolvedToolKind.ACTION
         ? Object.values(piece.actions)
         : Object.values(piece.triggers)
-    return objects.map((object) => toCandidate({ piece, object, signals, context }))
+    return objects
+        .filter((object) => context.agentsEnabled || !NEEDS_AGENT_RUNTIME.has(object.name))
+        .map((object) => toCandidate({ piece, object, signals, context }))
 }
 
 function toCandidate({ piece, object, signals, context }: ToCandidateParams): ToolCandidate {
@@ -223,6 +254,7 @@ export type ToolIntent = {
     kind: ResolvedToolKind
     summary: string
     service: string | null
+    product?: string | null
 }
 
 type LexicalSignals = Pick<DiscoverySignals, 'matchedNameTokens' | 'nameTokenCount' | 'descriptionHits'>

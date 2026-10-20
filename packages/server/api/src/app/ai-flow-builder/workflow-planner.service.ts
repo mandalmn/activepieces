@@ -83,7 +83,7 @@ function stripFences({ text }: { text: string }): string {
 function buildPlannerPrompt({ timezone }: { timezone: string }): string {
     return [
         'You turn an automation request into a workflow plan.',
-        'You describe WHAT the automation must do. You never name a specific vendor product, integration, connector or API endpoint to use.',
+        'You describe WHAT the automation must do. Keep every summary about the work rather than the tool, and never name an integration, connector or API endpoint. The one place a product belongs is the "product" field, and only when the person named it themselves.',
         'Answer with a single JSON object and nothing else. No prose, no code fences.',
         '',
         'Shape:',
@@ -95,6 +95,7 @@ function buildPlannerPrompt({ timezone }: { timezone: string }): string {
         `    "kind": "${WorkflowTriggerKind.SCHEDULE}" | "${WorkflowTriggerKind.EVENT}" | "${WorkflowTriggerKind.MANUAL}",`,
         '    "summary": "what starts the automation",',
         '    "service": "the kind of system that emits the event, or null",',
+        '    "product": "the product the person named for this, or null",',
         '    "schedule": { "cronExpression": "five field cron", "timezone": "IANA zone", "description": "plain words" } or null',
         '  },',
         '  "steps": [',
@@ -103,6 +104,7 @@ function buildPlannerPrompt({ timezone }: { timezone: string }): string {
         `      "kind": "${WorkflowStepKind.FETCH}" | "${WorkflowStepKind.TRANSFORM}" | "${WorkflowStepKind.OUTPUT}" | "${WorkflowStepKind.CONDITION}",`,
         '      "summary": "what this step does, in plain words",',
         '      "service": "the kind of system involved, or null",',
+        '      "product": "the product the person named for this step, or null",',
         '      "dependsOn": ["ids of steps that must run first"]',
         '    }',
         '  ]',
@@ -115,6 +117,7 @@ function buildPlannerPrompt({ timezone }: { timezone: string }): string {
         '- Split the work: retrieving data, transforming or calculating it, and delivering it are separate steps.',
         `- At most ${MAX_WORKFLOW_PLAN_STEPS} steps.`,
         '- "service" is a category such as "email", "chat", "spreadsheet" or "market data" — never a product name.',
+        '- "product" is the product the person actually named for that step, such as "salesforce", "gmail" or "slack". Use null when they named none. Always fill "service" as well, so the step still works when that product is not connected.',
         '- Keep every "service" value in English. Write "name", "description" and every "summary" in the language the request is written in.',
     ].join('\n')
 }

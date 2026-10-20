@@ -88,7 +88,7 @@ async function buildFromPlan({ plan, prompt, projectId, platformId, userId, log 
         }
     }
 
-    const assembled = await flowAssembler(log).assemble({ plan: resolved.plan, projectId, platformId, userId })
+    const assembled = await flowAssembler(log).assemble({ plan: resolved.plan, prompt, projectId, platformId, userId })
     return {
         status: AiFlowGenerationStatus.DRAFTED,
         prompt,

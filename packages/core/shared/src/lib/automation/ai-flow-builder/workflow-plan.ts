@@ -39,6 +39,7 @@ export const WorkflowTrigger = z.object({
     kind: z.enum(WorkflowTriggerKind),
     summary: z.string().min(1).max(MAX_WORKFLOW_PLAN_TEXT_LENGTH),
     service: Nullable(z.string().max(MAX_WORKFLOW_PLAN_NAME_LENGTH)),
+    product: Nullable(z.string().max(MAX_WORKFLOW_PLAN_NAME_LENGTH)),
     schedule: Nullable(WorkflowSchedule),
 })
 
@@ -47,6 +48,7 @@ export const WorkflowStep = z.object({
     kind: z.enum(WorkflowStepKind),
     summary: z.string().min(1).max(MAX_WORKFLOW_PLAN_TEXT_LENGTH),
     service: Nullable(z.string().max(MAX_WORKFLOW_PLAN_NAME_LENGTH)),
+    product: Nullable(z.string().max(MAX_WORKFLOW_PLAN_NAME_LENGTH)),
     dependsOn: z.array(WorkflowStepId).max(MAX_WORKFLOW_PLAN_STEPS),
 })
 

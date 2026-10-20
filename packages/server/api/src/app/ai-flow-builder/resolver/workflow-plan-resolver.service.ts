@@ -86,7 +86,7 @@ async function resolveTrigger({ trigger, context, log }: ResolveTriggerParams): 
     }
 
     const outcome = await resolveIntent({
-        intent: { kind: ResolvedToolKind.TRIGGER, summary: trigger.summary, service: trigger.service ?? null },
+        intent: { kind: ResolvedToolKind.TRIGGER, summary: trigger.summary, service: trigger.service ?? null, product: trigger.product ?? null },
         stepKind: null,
         context,
         log,
@@ -109,7 +109,7 @@ async function resolveStep({ step, context, log }: ResolveStepParams): Promise<R
     }
 
     const outcome = await resolveIntent({
-        intent: { kind: ResolvedToolKind.ACTION, summary: step.summary, service: step.service ?? null },
+        intent: { kind: ResolvedToolKind.ACTION, summary: step.summary, service: step.service ?? null, product: step.product ?? null },
         stepKind: step.kind,
         context,
         log,
