@@ -107,3 +107,26 @@ deploy/terraform/**/*.tfstate.backup
 deploy/terraform/**/.terraform.lock.hcl
 deploy/terraform/**/terraform.tfvars
 deploy/terraform/**/terraform-*.tfvars
+
+# Large binary files. This repo does not use Git LFS, so app bundles, model
+# weights, datasets, databases and videos stay out of git. Files already
+# tracked stay tracked; use `git add -f` for a deliberate exception.
+*.aab
+*.apk
+*.ipa
+*.dmg
+*.zip
+*.tar.gz
+*.7z
+*.pt
+*.pth
+*.ckpt
+*.onnx
+*.safetensors
+*.h5
+*.parquet
+*.db
+*.sqlite
+*.sqlite3
+*.mp4
+*.mov
